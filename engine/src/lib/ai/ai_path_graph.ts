@@ -1,10 +1,11 @@
 import { UT } from '../core/utils';
 
 export interface AIPathNode<T> {
+  id: string;
   pos: T;
   children: Array<string>;
   parent?: AIPathNode<T> | null;
-  data?: Object | null;
+  type: string;
   g: number;
   h: number;
   f: number;
@@ -49,8 +50,10 @@ export abstract class AIPathGraph<T> {
     this.nodes.clear();
     for (const nid in json['Nodes']) {
       this.nodes.set(nid, {
+        id: nid,
         pos: json['Nodes'][nid]['Pos'],
         children: json['Nodes'][nid]['Children'],
+        type: json['Nodes'][nid]['Type'],
         g: 0,
         h: 0,
         f: 0
@@ -201,6 +204,14 @@ export abstract class AIPathGraph<T> {
     return null;
   }
 
+  findNodeById(id: string): AIPathNode<T> | undefined {
+    return this.nodes.values().find(n => n.id == id);
+  }
+
+  findNodeByType(type: string): AIPathNode<T> | undefined {
+    return this.nodes.values().find(n => n.type == type);
+  }
+
   /**
    * Find all nodes matching with the predicate function.
    * 
@@ -216,6 +227,10 @@ export abstract class AIPathGraph<T> {
     }
 
     return res;
+  }
+
+  findNodesByType(type: string): Array<AIPathNode<T>> {
+    return this.findNodes((n: any) => n.type == type);
   }
 
   /**

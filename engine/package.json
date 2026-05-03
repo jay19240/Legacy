@@ -68,7 +68,7 @@
     "unplugin-preprocessor-directives": "^1.0.3",
     "vite-plugin-dts": "^4.5.4",
     "vite-plugin-static-copy": "^3.0.0",
-    "vite-plugin-top-level-await": "^1.4.1",
+    "vite-plugin-top-level-await": "^1.2.2",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }
