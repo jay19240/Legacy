@@ -89,8 +89,8 @@ export default defineConfig(({ mode }) => {
     build: {
       minify: true,
       lib: {
-        entry: path.resolve(__dirname, 'src/lib/legacygpu.ts'),
-        name: 'LegacyGPU',
+        entry: path.resolve(__dirname, 'src/lib/legacy.ts'),
+        name: 'Legacy',
         fileName: 'index',
         formats: ['es'],
       },
