@@ -40,8 +40,9 @@ export class EnginePack2D {
   cameraY: number;
   scaleX: number;
   scaleY: number;
-  updateItems: Array<EnginePackItem<any>>;
-  drawItems: Array<EnginePackItem<any>>;
+  // --------------------------------------------
+  updateItems: Array<any>;
+  drawItems: Array<any>;
 
   constructor() {
     this.bin = new EnginePackItemList<Blob>;
@@ -83,7 +84,7 @@ export class EnginePack2D {
       if (file != null) {
         const url = URL.createObjectURL(await file.async('blob'));
         const tex = await gfx2TextureManager.loadTexture(url);
-        pack.tex.push({ name: infos.name, ext: 'bitmap', object: tex, blobUrl: url });
+        pack.tex.set(infos.name, { name: infos.name, ext: 'bitmap', object: tex, blobUrl: url });
       }
     }
 
@@ -104,118 +105,144 @@ export class EnginePack2D {
       else if (file != null && infos.ext == 'ase') {
         const url = URL.createObjectURL(await file.async('blob'));
         const sst = await spritesheetManager.loadSpritesheet('asesprite', url, entry.name);
-        pack.sst.push({ name: infos.name, ext: 'ase', object: sst, blobUrl: url });
+        pack.sst.set(infos.name, { name: infos.name, ext: 'ase', object: sst, blobUrl: url });
       }
       else if (file != null && infos.ext == 'ezs') {
         const url = URL.createObjectURL(await file.async('blob'));
         const sst = await spritesheetManager.loadSpritesheet('ezspritesheet', url, entry.name);
-        pack.sst.push({ name: infos.name, ext: 'ezs', object: sst, blobUrl: url });
+        pack.sst.set(infos.name, { name: infos.name, ext: 'ezs', object: sst, blobUrl: url });
       }
       else if (file != null && infos.ext == 'mp3') {
         const url = URL.createObjectURL(await file.async('blob'));
         const snd = await soundManager.loadSound(url, entry.name);
-        pack.snd.push({ name: infos.name, ext: 'mp3', object: snd, blobUrl: url });
+        pack.snd.set(infos.name, { name: infos.name, ext: 'mp3', object: snd, blobUrl: url });
       }
       else if (file != null && infos.ext == 'jsc') {
         const url = URL.createObjectURL(await file.async('blob'));
         const jsc = new ScriptMachine();
         await jsc.loadFromFile(url);
-        pack.jsc.push({ name: infos.name, ext: 'jsc', object: jsc, blobUrl: url });
+        pack.jsc.set(infos.name, { name: infos.name, ext: 'jsc', object: jsc, blobUrl: url });
+        this.updateItems.push(jsc);
       }
       else if (file != null && infos.ext == 'jss') {
         const url = URL.createObjectURL(await file.async('blob'));
         const jss = new Gfx2SpriteJSS();
         await jss.loadFromFile(url);
-        pack.jss.push({ name: infos.name, ext: 'jss', object: jss, blobUrl: url });
+        pack.jss.set(infos.name, { name: infos.name, ext: 'jss', object: jss, blobUrl: url });
+        this.updateItems.push(jss);
+        this.drawItems.push(jss);
       }
       else if (file != null && infos.ext == 'jas') {
         const url = URL.createObjectURL(await file.async('blob'));
         const jas = new Gfx2SpriteJAS();
         await jas.loadFromFile(url);
-        pack.jas.push({ name: infos.name, ext: 'jas', object: jas, blobUrl: url });
+        pack.jas.set(infos.name, { name: infos.name, ext: 'jas', object: jas, blobUrl: url });
+        this.updateItems.push(jas);
+        this.drawItems.push(jas);
       }
       else if (file != null && infos.ext == 'jtm') {
         const url = URL.createObjectURL(await file.async('blob'));
         const jtm = new Gfx2TileMap();
         await jtm.loadFromFile(url);
-        pack.jtm.push({ name: infos.name, ext: 'jtm', object: jtm, blobUrl: url });
+        pack.jtm.set(infos.name, { name: infos.name, ext: 'jtm', object: jtm, blobUrl: url });
+        this.updateItems.push(jtm);
+        this.drawItems.push(jtm);
       }
       else if (file != null && infos.ext == 'tilekit') {
         const url = URL.createObjectURL(await file.async('blob'));
         const jtm = new Gfx2TileMap();
         await jtm.loadFromTileKit(url);
-        pack.jtm.push({ name: infos.name, ext: 'jtm', object: jtm, blobUrl: url });
+        pack.jtm.set(infos.name, { name: infos.name, ext: 'jtm', object: jtm, blobUrl: url });
+        this.updateItems.push(jtm);
+        this.drawItems.push(jtm);
       }
       else if (file != null && infos.ext == 'spritefusion') {
         const url = URL.createObjectURL(await file.async('blob'));
         const jtm = new Gfx2TileMap();
         await jtm.loadFromSpriteFusion(url);
-        pack.jtm.push({ name: infos.name, ext: 'jtm', object: jtm, blobUrl: url });
+        pack.jtm.set(infos.name, { name: infos.name, ext: 'jtm', object: jtm, blobUrl: url });
+        this.updateItems.push(jtm);
+        this.drawItems.push(jtm);
       }
       else if (file != null && infos.ext == 'jlm') {
         const url = URL.createObjectURL(await file.async('blob'));
         const jlm = new Motion();
         await jlm.loadFromFile(url);
-        pack.jlm.push({ name: infos.name, ext: 'jlm', object: jlm, blobUrl: url });
+        pack.jlm.set(infos.name, { name: infos.name, ext: 'jlm', object: jlm, blobUrl: url });
+        this.updateItems.push(jlm);
       }
       else if (file != null && infos.ext == 'crv') {
         const url = URL.createObjectURL(await file.async('blob'));
         const crv = await Curve.createFromFile(url);
-        pack.crv.push({ name: infos.name, ext: 'crv', object: crv, blobUrl: url });
+        pack.crv.set(infos.name, { name: infos.name, ext: 'crv', object: crv, blobUrl: url });
       }
       else if (file != null && infos.ext == 'blm') {
         const url = URL.createObjectURL(await file.async('blob'));
         const jlm = new Motion();
         await jlm.loadFromBinaryFile(url);
-        pack.jlm.push({ name: infos.name, ext: 'blm', object: jlm, blobUrl: url });
+        pack.jlm.set(infos.name, { name: infos.name, ext: 'blm', object: jlm, blobUrl: url });
+        this.updateItems.push(jlm);
       }
       else if (file != null && infos.ext == 'grf') {
         const url = URL.createObjectURL(await file.async('blob'));
         const grf = new AIPathGraph2D();
         await grf.loadFromFile(url);
-        pack.grf.push({ name: infos.name, ext: 'grf', object: grf, blobUrl: url });
+        pack.grf.set(infos.name, { name: infos.name, ext: 'grf', object: grf, blobUrl: url });
       }
       else if (file != null && infos.ext == 'grd') {
         const url = URL.createObjectURL(await file.async('blob'));
         const grd = new AIPathGrid2D();
         await grd.loadFromFile(url);
-        pack.grd.push({ name: infos.name, ext: 'grd', object: grd, blobUrl: url });
+        pack.grd.set(infos.name, { name: infos.name, ext: 'grd', object: grd, blobUrl: url });
       }
       else if (file != null && infos.ext == 'ent') {
         const url = URL.createObjectURL(await file.async('blob'));
         const entity = await createEntityFromFile(url);
-        pack.ent.push({ name: infos.name, ext: 'ent', object: entity, blobUrl: url });
+        pack.ent.set(infos.name, { name: infos.name, ext: 'ent', object: entity, blobUrl: url });
       }
       else if (file != null) {
         const url = URL.createObjectURL(await file.async('blob'));
         const blob = await fileManager.loadFile(url, entry.name);
-        pack.bin.push({ name: infos.name, ext: infos.ext, object: blob, blobUrl: url });
+        pack.bin.set(infos.name, { name: infos.name, ext: infos.ext, object: blob, blobUrl: url });
       }
     }
-
-    pack.updateItems.push(...pack.jsc, ...pack.jas, ...pack.jss, ...pack.jtm, ...pack.jlm);
-    pack.drawItems.push(...pack.jas, ...pack.jss, ...pack.jtm);
 
     return pack;
   }
 
   update(ts: number) {
     for (const item of this.updateItems) {
-      item.object.update(ts);
+      item.update(ts);
     }
   }
 
   draw() {
     for (const item of this.drawItems) {
-      item.object.draw();
+      item.draw();
     }
   }
 
-  setUpdateList(updateItems: Array<EnginePackItem<any>>): void {
-    this.updateItems = updateItems;
+  addUpdateItem(item: any) {
+    this.updateItems.push(item);
   }
 
-  setDrawList(drawItems: Array<EnginePackItem<any>>): void {
-    this.drawItems = drawItems;
+  removeUpdateItem(item: any) {
+    this.updateItems.splice(this.updateItems.indexOf(item), 1);
+  }
+
+  clearUpdateList() {
+    this.updateItems = [];
+  }
+
+  addDrawItem(item: any) {
+    this.drawItems.push(item);
+  }
+
+  removeDrawItem(item: any) {
+    this.drawItems.splice(this.drawItems.indexOf(item), 1);
+  }
+
+  clearDrawList() {
+    this.drawItems = [];
   }
 }

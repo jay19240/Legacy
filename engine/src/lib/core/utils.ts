@@ -920,36 +920,36 @@ export class UT {
   }
 
   /**
-   * @param rot - The euler rotation angles.
+   * @param rot - The euler rotation angles [x, y, z].
    */
-  static VEC3_XAXIS(rot: vec3) {
-    return {
-      x: Math.cos(rot[1]) * Math.cos(rot[2]),
-      y: Math.cos(rot[0]) * Math.sin(rot[2]) + Math.sin(rot[0]) * Math.sin(rot[1]) * Math.cos(rot[2]),
-      z: Math.sin(rot[0]) * Math.sin(rot[2]) - Math.cos(rot[0]) * Math.sin(rot[1]) * Math.cos(rot[2])
-    };
+  static VEC3_XAXIS(rot: vec3): vec3 {
+    return [
+      Math.cos(rot[1]) * Math.cos(rot[2]),
+      Math.cos(rot[0]) * Math.sin(rot[2]) - Math.sin(rot[0]) * Math.sin(rot[1]) * Math.cos(rot[2]),
+      Math.sin(rot[0]) * Math.sin(rot[2]) + Math.cos(rot[0]) * Math.sin(rot[1]) * Math.cos(rot[2])
+    ];
   }
 
   /**
-   * @param rot - The euler rotation angles.
+   * @param rot - The euler rotation angles [x, y, z].
    */
-  static VEC3_YAXIS(rot: vec3) {
-    return {
-      x: -Math.cos(rot[1]) * Math.sin(rot[2]),
-      y: Math.cos(rot[0]) * Math.cos(rot[2]) - Math.sin(rot[0]) * Math.sin(rot[1]) * Math.sin(rot[2]),
-      z: Math.sin(rot[0]) * Math.cos(rot[2]) + Math.cos(rot[0]) * Math.sin(rot[1]) * Math.sin(rot[2])
-    };
+  static VEC3_YAXIS(rot: vec3): vec3 {
+    return [
+      -Math.cos(rot[1]) * Math.sin(rot[2]),
+      Math.cos(rot[0]) * Math.cos(rot[2]) + Math.sin(rot[0]) * Math.sin(rot[1]) * Math.sin(rot[2]),
+      Math.sin(rot[0]) * Math.cos(rot[2]) - Math.cos(rot[0]) * Math.sin(rot[1]) * Math.sin(rot[2])
+    ];
   }
 
   /**
-   * @param rot - The euler rotation angles.
+   * @param rot - The euler rotation angles [x, y, z].
    */
-  static VEC3_ZAXIS(rot: vec3) {
-    return {
-      x: Math.sin(rot[1]),
-      y: -Math.sin(rot[0]) * Math.cos(rot[1]),
-      z: Math.cos(rot[0]) * Math.cos(rot[1])
-    };
+  static VEC3_ZAXIS(rot: vec3): vec3 {
+    return [
+      -Math.sin(rot[1]),
+      -Math.sin(rot[0]) * Math.cos(rot[1]),
+      Math.cos(rot[0]) * Math.cos(rot[1])
+    ];
   }
 
   /**

@@ -25,7 +25,6 @@ def register():
   bpy.utils.register_class(WARME_OT_create_jwa)
   bpy.utils.register_class(WARME_OT_cast_to_jwa)
   bpy.utils.register_class(WARME_OT_create_grf)
-  bpy.utils.register_class(WARME_OT_cast_to_grf)
   bpy.utils.register_class(WARME_OT_create_jlm_points)
   bpy.utils.register_class(WARME_OT_create_jlm_curve)
   bpy.utils.register_class(WARME_OT_create_jlt_point)
@@ -61,7 +60,6 @@ def unregister():
   bpy.utils.unregister_class(WARME_OT_create_jwa)
   bpy.utils.unregister_class(WARME_OT_cast_to_jwa)
   bpy.utils.unregister_class(WARME_OT_create_grf)
-  bpy.utils.unregister_class(WARME_OT_cast_to_grf)
   bpy.utils.unregister_class(WARME_OT_create_jlm_points)
   bpy.utils.unregister_class(WARME_OT_create_jlm_curve)
   bpy.utils.unregister_class(WARME_OT_create_jlt_point)
@@ -350,37 +348,33 @@ class WARME_OT_create_grf(bpy.types.Operator):
   bl_options = {'REGISTER', 'UNDO_GROUPED'}
 
   def execute(self, context):
-    bpy.ops.mesh.primitive_plane_add()
-    plane = context.active_object
-    plane.name = "Graph"
-    plane.color = (1.0, 0.85, 0.2, 1)
-    utils.triangulate_mesh(plane)
+    # 1. Création d'un mesh vide avec un seul sommet à l'origine
+    mesh = bpy.data.meshes.new("Graph_Data")
+    obj = bpy.data.objects.new("Graph", mesh)
+    bm = bmesh.new()
+    bm.verts.new((0, 0, 0))
+    bm.to_mesh(mesh)
+    bm.free()
 
     collection = utils.get_or_create_collection("GRF")
-    utils.unlink_from_all_collections(plane)
-    collection.objects.link(plane)
+    collection.objects.link(obj)
+    context.view_layer.objects.active = obj
+    obj.select_set(True)
 
-    self.report({'INFO'}, "Creation successful ✔")
-    return {"FINISHED"}
+    if "grf_node_type" not in mesh.attributes:
+      mesh.attributes.new(name="grf_node_type", type='STRING', domain='POINT')
+    if "grf_visual" not in mesh.attributes:
+      mesh.attributes.new(name="grf_visual", type='FLOAT_COLOR', domain='POINT')
+    #if
 
+    space = context.space_data
+    if space.type == 'VIEW_3D':
+      space.shading.color_type = 'VERTEX'
+      space.overlay.show_extra_indices = False # Optionnel
+      space.shading.type = 'SOLID'
+    #if
 
-class WARME_OT_cast_to_grf(bpy.types.Operator):
-  """Cast To GRF""" 
-  bl_idname = "object.cast_to_grf"
-  bl_label = "Graph Node"
-  bl_options = {'REGISTER', 'UNDO_GROUPED'}
-
-  def execute(self, context):
-    collection = utils.get_or_create_collection("GRF")
-
-    for object in bpy.context.selected_objects:
-      object.color = (1.0, 0.85, 0.2, 1)
-      utils.triangulate_mesh(object)
-      utils.unlink_from_all_collections(object)
-      collection.objects.link(object)
-      self.report({'INFO'}, "Cast successful ✔")
-    #endfor
-
+    self.report({'INFO'}, "Graph prêt")
     return {"FINISHED"}
 
 

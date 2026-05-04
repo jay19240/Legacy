@@ -233,7 +233,7 @@ export class Gfx3Material {
     this.jamFramesChanged = false;
 
     this.grp2 = gfx3Manager.createStaticGroup('MESH_PIPELINE', 2);
-    this.params = this.grp2.setFloat(0, 'MAT_PARAMS', Gfx3MatParam.COUNT + 16);
+    this.params = this.grp2.setFloat(0, 'MAT_PARAMS', Gfx3MatParam.COUNT + Object.values(MESH_MAT_CUSTOM_PARAMS).length);
     this.params[Gfx3MatParam.ID] = options.id ?? 0;
     this.params[Gfx3MatParam.OPACITY] = options.opacity ?? 1.0;
     // --------------------------------------------------------------------------------------------------------
@@ -811,7 +811,7 @@ export class Gfx3Material {
   setCustomParamValue(name: string, value: number): void {
     const paramIndex = Object.values(MESH_MAT_CUSTOM_PARAMS).findIndex(n => n == name);
     if (paramIndex == -1) {
-      throw new Error('Gfx3Material::setCustomParam(): Custom param name not found !');
+      throw new Error('Gfx3Material::setCustomParamValue(): Custom param name not found !');
     }
 
     this.params[Gfx3MatParam.COUNT + paramIndex] = value;
@@ -825,7 +825,7 @@ export class Gfx3Material {
   getCustomParamValue(name: string): number {
     const paramIndex = Object.values(MESH_MAT_CUSTOM_PARAMS).findIndex(n => n == name);
     if (paramIndex == -1) {
-      throw new Error('Gfx3Material::getCustomParam(): Custom param name not found !');
+      throw new Error('Gfx3Material::getCustomParamValue(): Custom param name not found !');
     }
 
     return this.params[Gfx3MatParam.COUNT + paramIndex];

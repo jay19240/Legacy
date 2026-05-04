@@ -3,6 +3,22 @@ import { Gfx3RendererAbstract } from '../gfx3/gfx3_renderer_abstract';
 export const WATER_SHADER_VERTEX_ATTR_COUNT = 8;
 export const WATER_MAX_IMPACTS = 8;
 
+export const WATER_SHADER_INSERTS = {
+  VERT_INSERT: '',
+  FRAG_INSERT: ''
+};
+
+export const WATER_CUSTOM_PARAMS = {
+  S00: 'S00',
+  S01: 'S01',
+  S02: 'S02',
+  S03: 'S03',
+  S04: 'S04',
+  S05: 'S05',
+  S06: 'S06',
+  S07: 'S07'
+};
+
 export enum Gfx3WaterParam {
   WAVE_AMPLITUDE,
   WAVE_SCALE,
@@ -38,6 +54,9 @@ export enum Gfx3WaterParam {
   SUN_COLOR_B,
   SUN_COLOR_FACTOR,
   // --------------------------------------
+  S0_TEXTURE_EXIST,
+  S1_TEXTURE_EXIST,
+  // --------------------------------------
   COUNT
 };
 
@@ -48,6 +67,8 @@ export enum Gfx3WaterImpact {
   RADIUS,
   LIFETIME,
   AGE,
+  PAD1,
+  PAD2,
   COUNT
 };
 
@@ -106,9 +127,17 @@ export const WATER_PIPELINE_DESC: any = {
   }
 };
 
-const STRUCT_PARAMS = `
+const STRUCT_PARAMS = (data: any): string => `
 struct Params {
   ${Gfx3RendererAbstract.generateWGSLStructFromEnum(Gfx3WaterParam)}
+  ${data.S00}: f32,
+  ${data.S01}: f32,
+  ${data.S02}: f32,
+  ${data.S03}: f32,
+  ${data.S04}: f32,
+  ${data.S05}: f32,
+  ${data.S06}: f32,
+  ${data.S07}: f32
 }`;
 
 const STRUCT_IMPACT = `
@@ -121,11 +150,12 @@ struct VertexOutput {
   @builtin(position) Position: vec4<f32>,
   @location(0) FragWorldPos: vec3<f32>,
   @location(1) FragNormal: vec3<f32>,
-  @location(2) FragUV: vec2<f32>
+  @location(2) FragUV: vec2<f32>,
+  @location(3) FragColor: vec3<f32>
 };
 
 ${STRUCT_IMPACT}
-${STRUCT_PARAMS}
+${STRUCT_PARAMS(data)}
 
 @group(0) @binding(0) var<uniform> VPC_MATRIX: mat4x4<f32>;
 @group(0) @binding(1) var<uniform> CAMERA_POS: vec3<f32>;
@@ -153,14 +183,17 @@ fn main(
   let normalLocal = normalize(vec3<f32>(normalX, 1.0, normalZ));
 
   let displaced = vec3<f32>(Position.x, Position.y + h, Position.z);
-  let world = (M_MATRIX * vec4<f32>(displaced, 1.0)).xyz;
+  let worldPos = (M_MATRIX * vec4<f32>(displaced, 1.0)).xyz;
   let worldNormal = normalize((M_MATRIX * vec4<f32>(normalLocal, 0.0)).xyz);
 
+  ${data.VERT_INSERT}
+
   var output: VertexOutput;
-  output.Position = VPC_MATRIX * vec4<f32>(world, 1.0);
-  output.FragWorldPos = world;
+  output.Position = VPC_MATRIX * vec4<f32>(worldPos, 1.0);
+  output.FragWorldPos = worldPos;
   output.FragNormal = worldNormal;
   output.FragUV = FragUV;
+  output.FragColor = FragColor;
   return output;
 }
 
@@ -257,7 +290,7 @@ struct FragOutput {
   @location(3) Ch1: vec4<f32>
 };
 
-${STRUCT_PARAMS}
+${STRUCT_PARAMS(data)}
 
 @group(0) @binding(0) var<uniform> VPC_MATRIX: mat4x4<f32>;
 @group(0) @binding(1) var<uniform> CAMERA_POS: vec3<f32>;
@@ -270,24 +303,33 @@ ${STRUCT_PARAMS}
 @group(2) @binding(1) var ENV_MAP_SAMPLER: sampler;
 @group(2) @binding(2) var NORMAL_MAP_TEXTURE: texture_2d<f32>;
 @group(2) @binding(3) var NORMAL_MAP_SAMPLER: sampler;
+@group(2) @binding(4) var S0_TEXTURE: texture_2d<f32>;
+@group(2) @binding(5) var S0_SAMPLER: sampler;
+@group(2) @binding(6) var S1_TEXTURE: texture_2d<f32>;
+@group(2) @binding(7) var S1_SAMPLER: sampler;
 
 @fragment
 fn main(
   @builtin(position) Position: vec4<f32>,
   @location(0) FragWorldPos: vec3<f32>,
   @location(1) FragNormal: vec3<f32>,
-  @location(2) FragUV: vec2<f32>
+  @location(2) FragUV: vec2<f32>,
+  @location(3) FragColor: vec3<f32>
 ) -> FragOutput {
   let sunColor = vec3(PARAMS.SUN_COLOR_R, PARAMS.SUN_COLOR_G, PARAMS.SUN_COLOR_B);
   let sunDirection = vec3(PARAMS.SUN_DIRECTION_X, PARAMS.SUN_DIRECTION_Y, PARAMS.SUN_DIRECTION_Z);
   let surfaceColor = vec3(PARAMS.SURFACE_COLOR_R, PARAMS.SURFACE_COLOR_G, PARAMS.SURFACE_COLOR_B) * PARAMS.SURFACE_COLOR_ENABLED;
   let viewDir = normalize(CAMERA_POS - FragWorldPos);
-
+  var s0 = textureSample(S0_TEXTURE, S0_SAMPLER, FragUV);
+  var s1 = textureSample(S1_TEXTURE, S1_SAMPLER, FragUV);
+  
   let fragNormal = CalcFinalNormal(FragNormal, FragUV);
   let reflectAmount = CalcReflectAmount(fragNormal, viewDir);
   let envColor = CalcEnvMap(fragNormal, viewDir, surfaceColor) * PARAMS.OPTICS_ENV_MAP_ENABLED;
   let baseLight = mix(vec3<f32>(1.0), CalcLight(sunDirection, sunColor, fragNormal), PARAMS.SUN_ENABLED);
   var finalColor = mix(surfaceColor, envColor, reflectAmount) * baseLight;
+
+  ${data.FRAG_INSERT}
 
   var output: FragOutput;
   output.Base = vec4<f32>(finalColor, PARAMS.SURFACE_COLOR_FACTOR);

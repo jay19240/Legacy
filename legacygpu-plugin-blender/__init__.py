@@ -20,6 +20,8 @@ import os
 from bpy.app.handlers import persistent
 # ----------------------------------------------------------------------------------
 
+_handle = None
+
 @persistent
 def on_save(dummy):
   if (bpy.context.scene.world_properties.enable_auto_export):
@@ -27,6 +29,8 @@ def on_save(dummy):
 
 
 def register():
+  global _handle
+
   props.register()
   operators.register()
   operators_world.register()
@@ -35,6 +39,9 @@ def register():
   if on_save not in bpy.app.handlers.save_post:
     bpy.app.handlers.save_post.append(on_save)
 
+  _handle = bpy.types.SpaceView3D.draw_handler_add(
+    utils.draw_grf_node_values, (None, bpy.context), 'WINDOW', 'POST_PIXEL'
+  )
 
 def unregister():
   props.unregister()

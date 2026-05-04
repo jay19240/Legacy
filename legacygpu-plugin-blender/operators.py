@@ -5,7 +5,13 @@ from . import functions
 from . import utils
 # ----------------------------------------------------------------------------------
 
-ATTR_NAME = "node_meta_id"
+ATTR_NAME = "grf_node_id"
+VISUAL_NAME = "GRF_Node_Visual"
+
+GROUP_NAME = "GRF_Nodes"
+ATTR_ID = "grf_node_id"
+
+COLOR_ATTR_NAME = "GRF_Visual"
 
 def register():
   bpy.utils.register_class(WARME_OT_export_pack)
@@ -20,7 +26,6 @@ def register():
   bpy.utils.register_class(WARME_OT_remove_animation)
   bpy.utils.register_class(WARME_OT_material_add_animation)
   bpy.utils.register_class(WARME_OT_material_remove_animation)
-  bpy.utils.register_class(WARME_OT_apply_node_meta)
   bpy.utils.register_class(WARME_OT_add_particles_tweens_color)
   bpy.utils.register_class(WARME_OT_remove_particles_tweens_color)
   bpy.utils.register_class(WARME_OT_add_particles_tweens_size)
@@ -29,6 +34,7 @@ def register():
   bpy.utils.register_class(WARME_OT_remove_particles_tweens_opacity)
   bpy.utils.register_class(WARME_OT_add_particles_tweens_acceleration)
   bpy.utils.register_class(WARME_OT_remove_particles_tweens_acceleration)
+  bpy.utils.register_class(WARME_OT_grf_apply_node_meta)
 
 
 def unregister():
@@ -44,7 +50,6 @@ def unregister():
   bpy.utils.unregister_class(WARME_OT_remove_animation)
   bpy.utils.unregister_class(WARME_OT_material_add_animation)
   bpy.utils.unregister_class(WARME_OT_material_remove_animation)
-  bpy.utils.unregister_class(WARME_OT_apply_node_meta)
   bpy.utils.unregister_class(WARME_OT_add_particles_tweens_color)
   bpy.utils.unregister_class(WARME_OT_remove_particles_tweens_color)
   bpy.utils.unregister_class(WARME_OT_add_particles_tweens_size)
@@ -53,6 +58,7 @@ def unregister():
   bpy.utils.unregister_class(WARME_OT_remove_particles_tweens_opacity)
   bpy.utils.unregister_class(WARME_OT_add_particles_tweens_acceleration)
   bpy.utils.unregister_class(WARME_OT_remove_particles_tweens_acceleration)
+  bpy.utils.unregister_class(WARME_OT_grf_apply_node_meta)
 
 
 class WARME_OT_export_pack(bpy.types.Operator):
@@ -306,37 +312,6 @@ class WARME_OT_material_remove_animation(bpy.types.Operator):
     return {"FINISHED"}
 
 
-class WARME_OT_apply_node_meta(bpy.types.Operator):
-  """Applique la valeur de métadonnée aux sommets sélectionnés"""
-  bl_idname = "mesh.apply_node_meta"
-  bl_label = "Appliquer aux sommets"
-  bl_options = {'REGISTER', 'UNDO'}
-
-  def execute(self, context):
-    obj = context.active_object
-    if not obj or obj.mode != 'EDIT':
-      self.report({'ERROR'}, "L'objet doit être en Edit Mode")
-      return {'CANCELLED'}
-
-    bm = bmesh.from_edit_mesh(obj.data)
-    
-    # On récupère ou crée la couche d'entiers
-    layer = bm.verts.layers.int.get(ATTR_NAME)
-    if not layer:
-      layer = bm.verts.layers.int.new(ATTR_NAME)
-
-    # Valeur à appliquer depuis la variable de scène
-    val_to_apply = context.scene.grf_node_value
-
-    selected_verts = [v for v in bm.verts if v.select]
-    for v in selected_verts:
-      v[layer] = val_to_apply
-        
-    bmesh.update_edit_mesh(obj.data)
-    self.report({'INFO'}, f"Valeur {val_to_apply} appliquée à {len(selected_verts)} sommets.")
-    return {'FINISHED'}
-
-
 class WARME_OT_add_particles_tweens_color(bpy.types.Operator):
   """Add tween color""" 
   bl_idname = "object.add_particles_tweens_color"
@@ -423,3 +398,58 @@ class WARME_OT_remove_particles_tweens_acceleration(bpy.types.Operator):
   def execute(self, context):
     context.object.particles_properties.tweens_acceleration.remove(len(bpy.context.object.particles_properties.tweens_acceleration) - 1)
     return {"FINISHED"}
+
+
+class WARME_OT_grf_apply_node_meta(bpy.types.Operator):
+  """Applique l'ID aux sommets sélectionnés"""
+  bl_idname = "mesh.grf_apply_node_meta"
+  bl_label = "Assigner ID"
+  bl_options = {'REGISTER', 'UNDO'}
+
+  def execute(self, context):
+    obj = context.active_object
+    if not obj or obj.type != 'MESH' or obj.mode != 'EDIT':
+      return {'CANCELLED'}
+    #if
+
+    mesh = obj.data
+    bm = bmesh.from_edit_mesh(mesh)
+
+    # 1. Gérer le type pour l'export
+    layer_id = bm.verts.layers.string.get("grf_node_type") or bm.verts.layers.string.new("grf_node_type")
+    val = context.scene.grf_node_type
+
+    # Collecter les indices des vertices sélectionnés
+    selected_indices = []
+    for v in bm.verts:
+      if v.select:
+        v[layer_id] = val.encode('utf-8')
+        selected_indices.append(v.index)
+      #if
+    #for
+    
+    bmesh.update_edit_mesh(mesh)
+    
+    # Passer en mode OBJECT pour créer/modifier l'attribut
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # 2. Créer l'attribut de couleur sur le mesh
+    if COLOR_ATTR_NAME not in mesh.attributes:
+      mesh.attributes.new(name=COLOR_ATTR_NAME, type='FLOAT_COLOR', domain='POINT')
+    #if
+    
+    # Assigner les couleurs
+    color_attr = mesh.attributes[COLOR_ATTR_NAME]
+    for idx in selected_indices:
+      color_attr.data[idx].color = (1.0, 0.0, 0.0, 1.0)
+    #for
+    
+    # Retourner en mode EDIT
+    bpy.ops.object.mode_set(mode='EDIT')
+    
+    # Forcer l'affichage des attributs
+    if hasattr(context, 'space_data') and context.space_data:
+      context.space_data.shading.color_type = 'VERTEX'
+    #if
+    
+    return {'FINISHED'}

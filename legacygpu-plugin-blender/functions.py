@@ -657,10 +657,11 @@ def jwa_export(selected_obj):
   obj = {
     "Ident": "JWA",
     "NumVertices": -1,
+    "CustomParams": [],
     "Vertices": [],
     "TextureCoords": [],
     "Normals": [],
-    "Colors": []
+    "Colors": []    
   }
 
   # Triangulate selected object
@@ -708,6 +709,18 @@ def jwa_export(selected_obj):
   obj['SunColorG'] = selected_obj.water_properties.sun_color[1]
   obj['SunColorB'] = selected_obj.water_properties.sun_color[2]
   obj['SunColorFactor'] = selected_obj.water_properties.sun_color_factor
+
+  obj["CustomParams"].append({ "Name": selected_obj.water_properties.s00_name, "Value": selected_obj.water_properties.s00_value })
+  obj["CustomParams"].append({ "Name": selected_obj.water_properties.s01_name, "Value": selected_obj.water_properties.s01_value })
+  obj["CustomParams"].append({ "Name": selected_obj.water_properties.s02_name, "Value": selected_obj.water_properties.s02_value })
+  obj["CustomParams"].append({ "Name": selected_obj.water_properties.s03_name, "Value": selected_obj.water_properties.s03_value })
+  obj["CustomParams"].append({ "Name": selected_obj.water_properties.s04_name, "Value": selected_obj.water_properties.s04_value })
+  obj["CustomParams"].append({ "Name": selected_obj.water_properties.s05_name, "Value": selected_obj.water_properties.s05_value })
+  obj["CustomParams"].append({ "Name": selected_obj.water_properties.s06_name, "Value": selected_obj.water_properties.s06_value })
+  obj["CustomParams"].append({ "Name": selected_obj.water_properties.s07_name, "Value": selected_obj.water_properties.s07_value })
+
+  obj["S0Texture"] = bpy.path.basename(selected_obj.water_properties.s0_texture)
+  obj["S1Texture"] = bpy.path.basename(selected_obj.water_properties.s1_texture)
 
   # Vertices, Colors
   for tri in mesh.polygons:
@@ -792,6 +805,14 @@ def jwa_export_binary(selected_obj, path, filename):
     utils.write_string(f, data['EnvMapBottom'])
     utils.write_string(f, data['EnvMapFront'])
     utils.write_string(f, data['EnvMapBack'])
+
+    for param in data["CustomParams"]:
+      utils.write_string(f, param['Name'])
+      utils.write_string(f, param['Value'])
+    #endfor
+
+    utils.write_string(f, data['S0Texture'])
+    utils.write_string(f, data['S1Texture'])
 
     for vert in data["Vertices"]:
       buf = struct.pack('<f', vert)
@@ -910,6 +931,8 @@ def grf_export(selected_obj):
   # create dictionary of vertex group assignments per vertex
   vgroups = {v.index: [vgroup_names[g.group] for g in v.groups] for v in selected_obj.data.vertices}
 
+  node_type_layer = bm.verts.layers.string.get("grf_node_type")
+
   # build the graph
   for vert in bm.verts:
     world_coords = world_matrix @ vert.co
@@ -922,6 +945,12 @@ def grf_export(selected_obj):
     obj["Nodes"][vert.index]["H"] = 0
     obj["Nodes"][vert.index]["F"] = 0
     obj["Nodes"][vert.index]["Children"] = []
+
+    if node_type_layer:
+      obj["Nodes"][vert.index]["Type"] = vert[node_type_layer].decode('utf-8')
+    else:
+      obj["Nodes"][vert.index]["Type"] = 0
+    #if
 
     for e in vert.link_edges:
       v_other = e.other_vert(vert)

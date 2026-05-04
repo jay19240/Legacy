@@ -5,26 +5,27 @@ export interface EnginePackItem<T> {
   blobUrl: string;
 };
 
-export class EnginePackItemList<T> extends Array<EnginePackItem<T>> {
+export class EnginePackItemList<T> extends Map<string, EnginePackItem<T>> {
   constructor() {
     super();
   }
 
-  get(name: string): T {
-    const item = this.find(i => i.name == name);
+  getObject(name: string): T {
+    const item = this.get(name);
     if (!item) {
-      throw new Error('EnginePack::EnginePackItemList::get(): item not found !');
+      throw new Error('EnginePack::EnginePackItemList::getObject(): item not found !');
     }
 
     return item.object;
   }
 
   findWithRegex(regex: RegExp): T {
-    const item = this.find(i => i.name.search(regex) != -1);
-    if (!item) {
-      throw new Error('EnginePack::EnginePackItemList::get(): item not found !');
+    for (const item of this.values()) {
+      if (regex.test(item.name)) {
+        return item.object;
+      }
     }
 
-    return item.object;
+    throw new Error(`EnginePackItemList::findWithRegex(): No match for ${regex}`);
   }
 }

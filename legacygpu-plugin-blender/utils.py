@@ -4,6 +4,8 @@ import shutil
 import bmesh
 import struct
 import os
+import blf
+from bpy_extras.view3d_utils import location_3d_to_region_2d
 from pathlib import Path
 # ----------------------------------------------------------------------------------
 
@@ -254,3 +256,53 @@ def write_string(f, s):
   # On écrit la longueur (format 'i' pour int 4 octets) puis le contenu
   f.write(struct.pack('<i', len(b_str)))
   f.write(b_str)
+
+
+def draw_grf_node_values(self, dummy_context):
+  context = bpy.context
+  obj = context.active_object
+  
+  if not obj or obj.type != 'MESH':
+    return
+  #if
+  
+  attr = obj.data.attributes.get("grf_node_type")
+  if not attr or len(attr.data) == 0:
+    return
+  #if
+
+  # Matrice et infos de région
+  matrix = obj.matrix_world
+  region = context.region
+  rv3d = context.space_data.region_3d
+  
+  if not rv3d:
+    return
+  #if
+
+  font_id = 0
+  blf.size(font_id, 20)
+
+  # Vérifier que l'index est valide
+  num_verts = len(obj.data.vertices)
+  if len(attr.data) != num_verts:
+    return
+  #if
+
+  for i, v in enumerate(obj.data.vertices):
+    if i >= len(attr.data):
+      break
+    #if
+    
+    val = attr.data[i].value.decode('utf-8')
+    if val != 0:
+      pos_3d = matrix @ v.co
+      pos_2d = location_3d_to_region_2d(region, rv3d, pos_3d)
+      
+      if pos_2d:
+        blf.color(font_id, 1.0, 1.0, 0.0, 1.0)
+        blf.position(font_id, pos_2d.x + 10, pos_2d.y + 10, 0)
+        blf.draw(font_id, str(val))
+      #if
+    #if
+  #for

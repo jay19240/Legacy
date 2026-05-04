@@ -23,7 +23,7 @@ export class Gfx3MeshDecal extends Gfx3Transformable {
     this.sw = 1.0;
     this.sh = 1.0;
     this.opacity = 1.0;
-    this.debugEnabled = false;
+    this.debugEnabled = true;
   }
 
   /**

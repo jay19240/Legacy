@@ -1,6 +1,7 @@
 import bpy
 import bpy.utils.previews
 import os
+import bmesh
 from . import utils
 # ----------------------------------------------------------------------------------
 
@@ -129,7 +130,6 @@ class WARME_PT_options(bpy.types.Panel):
       layout.operator("object.cast_to_jnm")
       layout.operator("object.cast_to_jwa")
       layout.operator("object.cast_to_jsv")
-      layout.operator("object.cast_to_grf")
     # END CAST
 
     # START CAMERA
@@ -445,39 +445,80 @@ class WARME_PT_object(bpy.types.Panel):
     if selected and len(selected) == 1 and utils.belong_to_collection(bpy.context.selected_objects[0], "JWA"):
       selected_object = bpy.context.selected_objects[0]
       layout = self.layout.column()
-      utils.draw_input_row(layout, selected_object.water_properties, "wave_amplitude", "Wave Amplitude")
-      utils.draw_input_row(layout, selected_object.water_properties, "wave_scale", "Wave Scale")
-      utils.draw_input_row(layout, selected_object.water_properties, "wave_speed", "Wave Speed")
-      utils.draw_input_row(layout, selected_object.water_properties, "wave_choppiness", "Wave Choppiness")
-      utils.draw_input_row(layout, selected_object.water_properties, "wave_step_x", "Wave Step X")
-      utils.draw_input_row(layout, selected_object.water_properties, "wave_step_z", "Wave Step Z")
-      layout.separator(type="LINE")
-      utils.draw_input_row(layout, selected_object.water_properties, "normal_map", "Normal Map Texture")
-      utils.draw_input_row(layout, selected_object.water_properties, "normal_map_scroll_x", "Normal Map Scroll X")
-      utils.draw_input_row(layout, selected_object.water_properties, "normal_map_scroll_y", "Normal Map Scroll Y")
-      utils.draw_input_row(layout, selected_object.water_properties, "normal_map_intensity", "Normal Map Intensity")
-      utils.draw_input_row(layout, selected_object.water_properties, "normal_map_scale", "Normal Map Scale")
-      layout.separator(type="LINE")
-      utils.draw_input_row(layout, selected_object.water_properties, "surface_color_enabled", "Surface Color Enabled")
-      utils.draw_input_row(layout, selected_object.water_properties, "surface_color", "Surface Color")
-      utils.draw_input_row(layout, selected_object.water_properties, "surface_color_factor", "Surface Color Factor")
-      layout.separator(type="LINE")
-      utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_right", "Env Map Right")
-      utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_left", "Env Map Left")
-      utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_top", "Env Map Top")
-      utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_bottom", "Env Map Bottom")
-      utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_front", "Env Map Front")
-      utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_back", "Env Map Back")
-      utils.draw_input_row(layout, selected_object.water_properties, "optics_env_intensity", "Env Map Intensity")
-      utils.draw_input_row(layout, selected_object.water_properties, "optics_fresnel_power", "Fresnel Power")
-      utils.draw_input_row(layout, selected_object.water_properties, "optics_fresnel_biais", "Fresnel Biais")
-      layout.separator(type="LINE")
-      utils.draw_input_row(layout, selected_object.water_properties, "sun_enabled", "Sun Enabled")
-      utils.draw_input_row(layout, selected_object.water_properties, "sun_direction_x", "Sun Direction X")
-      utils.draw_input_row(layout, selected_object.water_properties, "sun_direction_y", "Sun Direction Y")
-      utils.draw_input_row(layout, selected_object.water_properties, "sun_direction_z", "Sun Direction Z")
-      utils.draw_input_row(layout, selected_object.water_properties, "sun_color", "Sun Color")
-      utils.draw_input_row(layout, selected_object.water_properties, "sun_color_factor", "Sun Color Factor")
+
+      box, opened = utils.draw_foldout(layout, selected_object.water_properties, "show_wave", "Wave", 'SMOOTHCURVE')
+      if opened:
+        utils.draw_input_row(layout, selected_object.water_properties, "wave_amplitude", "Amplitude")
+        utils.draw_input_row(layout, selected_object.water_properties, "wave_scale", "Scale")
+        utils.draw_input_row(layout, selected_object.water_properties, "wave_speed", "Speed")
+        utils.draw_input_row(layout, selected_object.water_properties, "wave_choppiness", "Choppiness")
+        utils.draw_input_row(layout, selected_object.water_properties, "wave_step_x", "Step X")
+        utils.draw_input_row(layout, selected_object.water_properties, "wave_step_z", "Step Z")
+
+      box, opened = utils.draw_foldout(layout, selected_object.water_properties, "show_normal_map", "Normal Map", 'NORMALS_FACE')
+      if opened:
+        utils.draw_input_row(layout, selected_object.water_properties, "normal_map", "Texture")
+        utils.draw_input_row(layout, selected_object.water_properties, "normal_map_scroll_x", "Scroll X")
+        utils.draw_input_row(layout, selected_object.water_properties, "normal_map_scroll_y", "Scroll Y")
+        utils.draw_input_row(layout, selected_object.water_properties, "normal_map_intensity", "Intensity")
+        utils.draw_input_row(layout, selected_object.water_properties, "normal_map_scale", "Scale")
+
+      box, opened = utils.draw_foldout(layout, selected_object.water_properties, "show_surface_color", "Surface Color", 'COLOR')
+      if opened:
+        utils.draw_input_row(layout, selected_object.water_properties, "surface_color_enabled", "Enable")
+        utils.draw_input_row(layout, selected_object.water_properties, "surface_color", "Color")
+        utils.draw_input_row(layout, selected_object.water_properties, "surface_color_factor", "Color Factor")
+
+      box, opened = utils.draw_foldout(layout, selected_object.water_properties, "show_optics", "Optics Settings", 'SHADING_TEXTURE')
+      if opened:
+        utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_right", "Env Map Right")
+        utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_left", "Env Map Left")
+        utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_top", "Env Map Top")
+        utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_bottom", "Env Map Bottom")
+        utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_front", "Env Map Front")
+        utils.draw_input_row(layout, selected_object.water_properties, "optics_env_map_back", "Env Map Back")
+        utils.draw_input_row(layout, selected_object.water_properties, "optics_env_intensity", "Env Map Intensity")
+        utils.draw_input_row(layout, selected_object.water_properties, "optics_fresnel_power", "Fresnel Power")
+        utils.draw_input_row(layout, selected_object.water_properties, "optics_fresnel_biais", "Fresnel Biais")
+
+      box, opened = utils.draw_foldout(layout, selected_object.water_properties, "show_sun", "Sun", 'LIGHT')
+      if opened:
+        utils.draw_input_row(layout, selected_object.water_properties, "sun_enabled", "Enable")
+        utils.draw_input_row(layout, selected_object.water_properties, "sun_direction_x", "Direction X")
+        utils.draw_input_row(layout, selected_object.water_properties, "sun_direction_y", "Direction Y")
+        utils.draw_input_row(layout, selected_object.water_properties, "sun_direction_z", "Direction Z")
+        utils.draw_input_row(layout, selected_object.water_properties, "sun_color", "Color")
+        utils.draw_input_row(layout, selected_object.water_properties, "sun_color_factor", "Color Factor")
+
+      box, opened = utils.draw_foldout(layout, selected_object.water_properties, "show_custom_params", "Custom Params", 'RNA')
+      if opened:
+        row = layout.row()
+        row.prop(selected_object.water_properties, "s00_name", text="")
+        row.prop(selected_object.water_properties, "s00_value", text="")
+        row = layout.row()
+        row.prop(selected_object.water_properties, "s01_name", text="")
+        row.prop(selected_object.water_properties, "s01_value", text="")
+        row = layout.row()
+        row.prop(selected_object.water_properties, "s02_name", text="")
+        row.prop(selected_object.water_properties, "s02_value", text="")
+        row = layout.row()
+        row.prop(selected_object.water_properties, "s03_name", text="")
+        row.prop(selected_object.water_properties, "s03_value", text="")
+        row = layout.row()
+        row.prop(selected_object.water_properties, "s04_name", text="")
+        row.prop(selected_object.water_properties, "s04_value", text="")
+        row = layout.row()
+        row.prop(selected_object.water_properties, "s05_name", text="")
+        row.prop(selected_object.water_properties, "s05_value", text="")
+        row = layout.row()
+        row.prop(selected_object.water_properties, "s06_name", text="")
+        row.prop(selected_object.water_properties, "s06_value", text="")
+        row = layout.row()
+        row.prop(selected_object.water_properties, "s07_name", text="")
+        row.prop(selected_object.water_properties, "s07_value", text="")
+        layout.separator(type="LINE")
+        utils.draw_input_row(layout, selected_object.water_properties, "s0_texture", "Texture S0")
+        utils.draw_input_row(layout, selected_object.water_properties, "s1_texture", "Texture S1")
     # END WATER
 
     # START JSM/JAM
@@ -777,37 +818,39 @@ class WARME_PT_object(bpy.types.Panel):
 
 
 class WARME_PT_grf_node_editor(bpy.types.Panel):
-  """Panneau dans l'onglet 'GRF' de la barre latérale (N)"""
-  bl_label = "GRF Node Metadata"
+  bl_label = "Legacy GRF"
   bl_idname = "VIEW3D_PT_grf_node_editor"
   bl_space_type = 'VIEW_3D'
   bl_region_type = 'UI'
-  bl_category = 'GRF' # Nom de l'onglet dans le N-Panel
+  bl_category = 'Legacy GRF'
 
   def draw(self, context):
-    layout = self.layout
-    scene = context.scene
-    obj = context.active_object
+    selected = bpy.context.selected_objects
+    if selected and len(selected) == 1 and utils.belong_to_collection(bpy.context.selected_objects[0], "GRF"):
+      layout = self.layout
+      scene = context.scene
+      obj = context.active_object
 
-    if not obj or obj.type != 'MESH':
-      layout.label(text="Sélectionnez un Mesh", icon='ERROR')
-      return
+      if not obj or obj.type != 'MESH':
+        layout.label(text="Sélectionnez un Mesh", icon='ERROR')
+        return
+      #if
 
-    box = layout.box()
-    box.label(text="Édition des Sommets", icon='DOT')
-    
-    # Champ de saisie de la valeur
-    col = box.column(align=True)
-    col.prop(scene, "grf_node_value", text="ID / Type")
-    
-    # Bouton pour appliquer
-    col.operator("mesh.apply_node_meta", icon='CHECKMARK')
+      box = layout.box()
+      box.label(text="Données du Nœud", icon='DOT')
+      
+      row = box.row(align=True)
+      row.prop(scene, "grf_node_type", text="Type")
+      row.operator("mesh.grf_apply_node_meta", text="Appliquer")
 
-    # Aide visuelle pour le vertex actif
-    if obj.mode == 'EDIT':
-      bm = bmesh.from_edit_mesh(obj.data)
-      active_vert = bm.select_history.active
-      if active_vert and isinstance(active_vert, bmesh.types.BMVert):
-        layer = bm.verts.layers.int.get(ATTR_NAME)
-        current_val = active_vert[layer] if layer else 0
-        box.label(text=f"Vertex Actif ({active_vert.index}) : {current_val}", icon='INFO')
+      # Infos en mode Edit
+      if obj.mode == 'EDIT':
+        bm = bmesh.from_edit_mesh(obj.data)
+        active = bm.select_history.active
+        if active and isinstance(active, bmesh.types.BMVert):
+          layer = bm.verts.layers.string.get("grf_node_type")
+          val = active[layer] if layer else 0
+          box.label(text=f"Sommet {active.index} | Type Actuel: {val.decode('utf-8')}", icon='INFO')
+        #if
+      #if
+    #if

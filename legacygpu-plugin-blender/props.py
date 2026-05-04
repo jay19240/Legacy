@@ -47,9 +47,9 @@ def register():
   bpy.types.Scene.export_assets_path = bpy.props.StringProperty(name="Assets Path", default="", subtype='FILE_PATH')
   bpy.types.Scene.export_engine_path = bpy.props.StringProperty(name="Engine Path", default="", subtype='FILE_PATH')
   bpy.types.Scene.auggie_prompt = bpy.props.StringProperty(name="Prompt", default="Write your prompt here...")
-  bpy.types.Scene.auggie_status = bpy.props.StringProperty(name="Status", default="Prêt")
+  bpy.types.Scene.auggie_status = bpy.props.StringProperty(name="Status", default="Ready")
   bpy.types.Scene.auggie_output = bpy.props.StringProperty(name="Output", default="")
-
+  bpy.types.Scene.grf_node_type = bpy.props.StringProperty(name="Node Type", default="")
 
 def unregister():
   bpy.utils.unregister_class(TweenColor)
@@ -67,6 +67,12 @@ def unregister():
   bpy.utils.unregister_class(WARME_PG_ParticlesProperties)
   bpy.utils.unregister_class(WARME_PG_EntityProperties)
   bpy.utils.unregister_class(WARME_PG_WaterProperties)
+  del bpy.types.Scene.export_assets_path
+  del bpy.types.Scene.export_engine_path
+  del bpy.types.Scene.auggie_prompt
+  del bpy.types.Scene.auggie_status
+  del bpy.types.Scene.auggie_output
+  del bpy.types.Scene.grf_node_type
 
 
 # -------------------------------------------------------------------------------
@@ -2159,6 +2165,31 @@ class WARME_PG_EntityProperties(bpy.types.PropertyGroup):
 
 
 class WARME_PG_WaterProperties(bpy.types.PropertyGroup):
+  show_wave: bpy.props.BoolProperty(
+    name="Waves",
+    default=False
+  )
+  show_normal_map: bpy.props.BoolProperty(
+    name="Normal Map",
+    default=False
+  )
+  show_surface_color: bpy.props.BoolProperty(
+    name="Surface Color",
+    default=False
+  )
+  show_optics: bpy.props.BoolProperty(
+    name="Optics Settings",
+    default=False
+  )
+  show_sun: bpy.props.BoolProperty(
+    name="Sun Settings",
+    default=False
+  )
+  show_custom_params: bpy.props.BoolProperty(
+    name="Custom Params",
+    default=False
+  )
+  # ----------------------------------------------------------------------------------
   wave_amplitude: bpy.props.FloatProperty(
     name="Wave Amplitude",
     description="Set the wave amplitude factor",
@@ -2201,6 +2232,7 @@ class WARME_PG_WaterProperties(bpy.types.PropertyGroup):
     default=(0.5),
     update=update_trigger_export
   )
+  # ----------------------------------------------------------------------------------
   normal_map: bpy.props.StringProperty(
     name="Normal Map",
     description="Normal Map texture",
@@ -2236,6 +2268,7 @@ class WARME_PG_WaterProperties(bpy.types.PropertyGroup):
     default=(0.2),
     update=update_trigger_export
   )
+  # ----------------------------------------------------------------------------------
   surface_color_enabled: bpy.props.BoolProperty(
     name="Surface Color Enabled",
     description="Enable or not the water surface color tint",
@@ -2257,6 +2290,7 @@ class WARME_PG_WaterProperties(bpy.types.PropertyGroup):
     default=(0.9),
     update=update_trigger_export
   )
+  # ----------------------------------------------------------------------------------
   optics_env_map_right: bpy.props.StringProperty(
     name="Cubemap Right",
     description="Set the cubemap right texture",
@@ -2320,6 +2354,7 @@ class WARME_PG_WaterProperties(bpy.types.PropertyGroup):
     default=(0.4),
     update=update_trigger_export
   )
+  # ----------------------------------------------------------------------------------
   sun_enabled: bpy.props.BoolProperty(
     name="Sun Enabled",
     description="Enable or not the sun",
@@ -2360,5 +2395,108 @@ class WARME_PG_WaterProperties(bpy.types.PropertyGroup):
     description="Set the sun intensity",
     subtype='NONE',
     default=(0.8),
+    update=update_trigger_export
+  )
+  # ----------------------------------------------------------------------------------
+  s00_name: bpy.props.StringProperty(
+    name="S00",
+    description="Custom slot name 00",
+    default="S00",
+    update=update_trigger_export
+  )
+  s00_value: bpy.props.StringProperty(
+    name="S00",
+    description="Custom slot value 00",
+    update=update_trigger_export
+  )
+  s01_name: bpy.props.StringProperty(
+    name="S01",
+    description="Custom slot name 01",
+    default="S01",
+    update=update_trigger_export
+  )
+  s01_value: bpy.props.StringProperty(
+    name="S01",
+    description="Custom slot value 01",
+    update=update_trigger_export
+  )
+  s02_name: bpy.props.StringProperty(
+    name="S02",
+    description="Custom slot name 02",
+    default="S02",
+    update=update_trigger_export
+  )
+  s02_value: bpy.props.StringProperty(
+    name="S02",
+    description="Custom slot value 02",
+    update=update_trigger_export
+  )
+  s03_name: bpy.props.StringProperty(
+    name="S03",
+    description="Custom slot name 03",
+    default="S03",
+    update=update_trigger_export
+  )
+  s03_value: bpy.props.StringProperty(
+    name="S03",
+    description="Custom slot value 03",
+    update=update_trigger_export
+  )
+  s04_name: bpy.props.StringProperty(
+    name="S04",
+    description="Custom slot name 04",
+    default="S04",
+    update=update_trigger_export
+  )
+  s04_value: bpy.props.StringProperty(
+    name="S04",
+    description="Custom slot value 04",
+    update=update_trigger_export
+  )
+  s05_name: bpy.props.StringProperty(
+    name="S05",
+    description="Custom slot name 05",
+    default="S05",
+    update=update_trigger_export
+  )
+  s05_value: bpy.props.StringProperty(
+    name="S05",
+    description="Custom slot value 05",
+    update=update_trigger_export
+  )
+  s06_name: bpy.props.StringProperty(
+    name="S06",
+    description="Custom slot name 06",
+    default="S06",
+    update=update_trigger_export
+  )
+  s06_value: bpy.props.StringProperty(
+    name="S06",
+    description="Custom slot value 06",
+    update=update_trigger_export
+  )
+  s07_name: bpy.props.StringProperty(
+    name="S07",
+    description="Custom slot name 07",
+    default="S07",
+    update=update_trigger_export
+  )
+  s07_value: bpy.props.StringProperty(
+    name="S07",
+    description="Custom slot value 07",
+    update=update_trigger_export
+  )
+  s0_texture: bpy.props.StringProperty(
+    name="S0 Texture",
+    description="Custom texture slot 0",
+    default="",
+    subtype='FILE_PATH',
+    update=update_trigger_export
+  )
+  s1_texture: bpy.props.StringProperty(
+    name="S1 Texture",
+    description="Custom texture slot 1",
+    default="",
+    subtype='FILE_PATH',
     update=update_trigger_export
   )
