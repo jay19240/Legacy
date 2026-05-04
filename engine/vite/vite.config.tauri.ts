@@ -3,11 +3,13 @@ import FullReload from 'vite-plugin-full-reload';
 import path from 'path';
 import wasm from 'vite-plugin-wasm';
 import topLevelAwait from 'vite-plugin-top-level-await';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+
 const host = process.env.TAURI_DEV_HOST;
+const projectRoot = path.resolve(__dirname, '..');
 
 export default defineConfig(({ mode }) => {
   return {
+    root: projectRoot,
     plugins: [
       wasm(),
       topLevelAwait(),
@@ -39,13 +41,15 @@ export default defineConfig(({ mode }) => {
     build: {
       target: 'esnext',
       sourcemap: false,
-      outDir: "dist",
+      outDir: path.resolve(projectRoot, 'dist'),
+      emptyOutDir: true,
       rollupOptions: {
         treeshake: false,
-        input: 'index.html',
-        output: {
-          inlineDynamicImports: true
-        }
+        input: {
+          main: path.resolve(projectRoot, 'index.html'),
+          game: path.resolve(projectRoot, 'game.html'),
+          examples: path.resolve(projectRoot, 'examples.html'),
+        },
       }
     },
   }

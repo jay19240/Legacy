@@ -11,8 +11,8 @@ import { Gfx3Material } from '@lib/gfx3_mesh/gfx3_mesh_material';
 import { Gfx3MatParam } from '@lib/gfx3_mesh/gfx3_mesh_shader';
 // ---------------------------------------------------------------------------------------
 
-const GRID_WIDTH = 200;
-const GRID_HEIGHT = 200;
+const GRID_WIDTH = 300;
+const GRID_HEIGHT = 300;
 const GRID_SPACE = 5;
 
 class Transform {
