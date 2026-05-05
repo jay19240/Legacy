@@ -29,7 +29,7 @@ import { Gfx3Water } from '../gfx3_water/gfx3_water';
 import { Sound } from '../sound/sound_manager';
 import { Motion } from '../motion/motion';
 import { ScriptMachine } from '../script/script_machine';
-import { EnginePackItem, EnginePackItemList } from './engine_pack_item_list';
+import { EnginePackItemList } from './engine_pack_item_list';
 import { Gfx3CameraWASD } from '../gfx3_camera/gfx3_camera_wasd';
 import { Gfx3CameraOrbit } from '../gfx3_camera/gfx3_camera_orbit';
 import { EngineEntity, createEntityFromFile } from './engine_entity';
@@ -114,7 +114,7 @@ class EnginePack3D {
    * 
    * @param {string} path - The archive file path.
    */
-  static async createFromFile(cameraType: 'wasd' | 'orbit' | 'classic', path: string): Promise<EnginePack3D> {
+  static async createFromFile(cameraType: 'wasd' | 'orbit' | 'classic', path: string, updated: boolean = true): Promise<EnginePack3D> {
     const res = await fetch(path);
     const zip = await JSZip.loadAsync(await res.blob());
     const pack = new EnginePack3D(cameraType);
@@ -397,6 +397,11 @@ class EnginePack3D {
     for (const item of [...pack.jsm.values(), ...pack.jam.values()]) {
       const material = pack.mat.getObject(item.name);
       item.object.setMaterial(material);
+    }
+
+    if (!updated) {
+      pack.updateItems = [];
+      pack.drawItems = [];
     }
 
     return pack;

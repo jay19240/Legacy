@@ -845,7 +845,7 @@ fn main(
 
   if (MAT.SHADOW_ENABLED == 1.0)
   {
-    shadow = CalcShadowMap(fragShadowPos);
+    shadow = CalcShadowMap(fragShadowPos, fragNormal);
   }
 
   // ----------------------------------------------------------------------------------------------------------
@@ -1340,18 +1340,22 @@ fn CalcToonMap(normal: vec3<f32>, fragPos: vec3<f32>, cameraPos: vec3<f32>, shad
 // *****************************************************************************************************************
 // CALC SHADOW MAP
 // *****************************************************************************************************************
-fn CalcShadowMap(fragShadowPos: vec3<f32>) -> f32
+fn CalcShadowMap(fragShadowPos: vec3<f32>, fragNormal: vec3<f32>) -> f32
 {
   var visibility = 0.0;
   var shadowDepthTextureSize = f32(textureDimensions(SHADOW_MAP_TEXTURE).x);
   var oneOverShadowDepthTextureSize = 1.0 / shadowDepthTextureSize;
+
+  var lightDir = normalize(-DIR_LIGHT.DIR);
+
+  let bias = max(0.005 * (1.0 - dot(fragNormal, lightDir)), 0.0005);
 
   for (var y = -1; y <= 1; y++)
   {
     for (var x = -1; x <= 1; x++)
     {
       var offset = vec2<f32>(vec2(x, y)) * oneOverShadowDepthTextureSize;
-      visibility += textureSampleCompare(SHADOW_MAP_TEXTURE, SHADOW_MAP_SAMPLER, fragShadowPos.xy + offset, fragShadowPos.z - 0.0001);
+      visibility += textureSampleCompare(SHADOW_MAP_TEXTURE, SHADOW_MAP_SAMPLER, fragShadowPos.xy + offset, fragShadowPos.z - bias);
     }
   }
 

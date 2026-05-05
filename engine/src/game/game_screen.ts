@@ -1,12 +1,18 @@
-import { gfx3Manager } from '@lib/legacy';
+import { gfx3DebugRenderer } from '@lib/legacy';
 import { gfx3MeshRenderer } from '@lib/legacy';
+import { gfx3Manager } from '@lib/legacy';
+import { gfx3MeshShadowRenderer } from '@lib/legacy';
+import { gfx3SpriteRenderer } from '@lib/legacy';
+import { gfx3SkyboxRenderer } from '@lib/legacy';
+import { gfx3FlareRenderer } from '@lib/legacy';
 import { gfx3ParticlesRenderer } from '@lib/legacy';
 import { gfx3WaterRenderer } from '@lib/legacy';
-import { gfx3SkyboxRenderer } from '@lib/legacy';
+import { gfx3PostRenderer } from '@lib/legacy';
+import { gfx3ShadowVolumeRenderer } from '@lib/legacy';
+import { gfx2Manager } from '@lib/legacy';
 import { Screen } from '@lib/legacy';
 import { Gfx3MeshJSM } from '@lib/legacy';
 import { EnginePack3D } from '@lib/legacy';
-import { gfx3DebugRenderer } from '@lib/legacy';
 // ---------------------------------------------------------------------------------------
 
 class GameScreen extends Screen {
@@ -20,17 +26,13 @@ class GameScreen extends Screen {
   }
 
   async onEnter() {
+    gfx2Manager.setBgColor(0, 0, 0, 0);
     this.pack = await EnginePack3D.createFromFile('orbit', './scene.blend.pak');
     this.player = this.pack.jsm.getObject('Player');
-
-    this.player.setRotationY(0.3);
-
-    gfx3MeshRenderer.setDirLight(true, [0, -1, -1], [1, 1, 1], [0.2, 0.2, 0.2]);
   }
 
   update(ts: number) {
     this.pack.update(ts);
-    // this.player.rotate(0, ts * 0.001, 0);
   }
 
   draw() {
@@ -40,17 +42,24 @@ class GameScreen extends Screen {
   }
 
   render(ts: number) {
+    gfx2Manager.beginRender();
+    gfx2Manager.render();
+    gfx2Manager.endRender();
+    // ------------------------------
     gfx3Manager.beginRender();
+    gfx3MeshShadowRenderer.render();
+    gfx3ShadowVolumeRenderer.render();
+    gfx3Manager.setDestinationTexture(gfx3PostRenderer.getSourceTexture());
     gfx3Manager.beginPassRender(0);
-    
     gfx3SkyboxRenderer.render();
+    gfx3FlareRenderer.render();
     gfx3MeshRenderer.render(ts);
-    
+    gfx3SpriteRenderer.render();
     gfx3ParticlesRenderer.render();
     gfx3WaterRenderer.render();
     gfx3DebugRenderer.render();
-
     gfx3Manager.endPassRender();
+    gfx3PostRenderer.render(ts, gfx3Manager.getCurrentRenderingTexture());
     gfx3Manager.endRender();
   }
 }

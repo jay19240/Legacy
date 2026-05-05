@@ -79,14 +79,17 @@ def unregister():
 # UTILS
 # -------------------------------------------------------------------------------
 def deferred_export():
-  bpy.ops.object.export_scene()
+  bpy.ops.object.export_pack()
   return None
 
 def update_trigger_export(self, context):
-  if context.scene.world_properties.enable_auto_export:
-    if bpy.app.timers.is_registered(deferred_export):
-      bpy.app.timers.unregister(deferred_export)    
-    #endif
+  auto_export_enabled = context.scene.world_properties.enable_auto_export
+
+  if bpy.app.timers.is_registered(deferred_export):
+    bpy.app.timers.unregister(deferred_export)
+  #endif
+  
+  if auto_export_enabled:
     bpy.app.timers.register(deferred_export, first_interval=1)
   #endif
 
@@ -147,6 +150,16 @@ def update_texture_path_bind(self, context):
         links.new(tex_node.outputs['Color'], bsdf.inputs['Base Color'])
     except:
       print("Erreur lors du chargement de l'image")
+    #except
+  else:
+    if obj.data.materials:
+      mat = obj.active_material
+      obj.data.materials.pop(index=obj.active_material_index)
+      if mat and mat.users == 0:
+        bpy.data.materials.remove(mat)
+      #endif
+    #endif
+  #endif
 
 def update_shadow_size(self, context):
   shadow = bpy.data.objects["ShadowProjector"]

@@ -16,7 +16,7 @@ import { Motion } from '../motion/motion';
 import { ScriptMachine } from '../script/script_machine';
 import { AIPathGraph2D } from '../ai/ai_path_graph';
 import { AIPathGrid2D } from '../ai/ai_path_grid';
-import { EnginePackItemList, EnginePackItem } from './engine_pack_item_list';
+import { EnginePackItemList } from './engine_pack_item_list';
 import { EngineEntity, createEntityFromFile } from './engine_entity';
 
 /**
@@ -71,7 +71,7 @@ export class EnginePack2D {
    * 
    * @param {string} path - The archive file path.
    */
-  async createFromFile(path: string): Promise<EnginePack2D> {
+  async createFromFile(path: string, updated: boolean = true): Promise<EnginePack2D> {
     const res = await fetch(path);
     const zip = await JSZip.loadAsync(await res.blob());
     const pack = new EnginePack2D();
@@ -205,6 +205,11 @@ export class EnginePack2D {
         const blob = await fileManager.loadFile(url, entry.name);
         pack.bin.set(infos.name, { name: infos.name, ext: infos.ext, object: blob, blobUrl: url });
       }
+    }
+
+    if (!updated) {
+      pack.updateItems = [];
+      pack.drawItems = [];
     }
 
     return pack;
