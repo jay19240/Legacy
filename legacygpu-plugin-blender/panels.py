@@ -68,6 +68,7 @@ class WARME_PT_options(bpy.types.Panel):
       layout.operator("object.kill_server")
       layout.separator()
       layout.operator("object.run_game")
+      layout.operator("object.build_game")
     # END GAME
 
     # START EXPORT

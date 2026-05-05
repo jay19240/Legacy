@@ -47,7 +47,6 @@ export default defineConfig(({ mode }) => {
         treeshake: false,
         input: {
           main: path.resolve(projectRoot, 'index.html'),
-          game: path.resolve(projectRoot, 'game.html'),
           examples: path.resolve(projectRoot, 'examples.html'),
         },
       }

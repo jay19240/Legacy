@@ -23,3 +23,10 @@ tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+[profile.release]
+incremental = true      # Active la réutilisation des parties non modifiées
+codegen-units = 16      # Divise le code en 16 morceaux pour compiler en parallèle
+lto = "thin"            # Optimisation "légère" : beaucoup plus rapide que le mode par défaut
+debug = false           # Pas besoin d'infos de debug pour ton jeu final
+strip = true            # Retire les symboles inutiles pour réduire la taille du .exe
+opt-level = 1

@@ -112,7 +112,7 @@ class ViewerScreen extends Screen {
       this.mesh = await CREATE_OBJ();
     }
     else if (e.key == '2') {
-      this.mesh = await CREATE_CUBE_BRICK();
+      this.mesh = await CREATE_CUBE_NORMAL();
     }
     else if (e.key == '3') {
       this.mesh = await CREATE_CUBE();
@@ -174,22 +174,11 @@ async function CREATE_OBJ() {
   return mesh;
 }
 
-async function CREATE_CUBE_BRICK() {
+async function CREATE_CUBE_NORMAL() {
   const mesh = new Gfx3MeshJSM();
-  await mesh.loadFromFile('./examples/viewer/cube_brick/mesh.jsm');
-  mesh.mat.setTexture(await gfx3TextureManager.loadTexture('./examples/viewer/cube_brick/albedo.png'));
-  mesh.mat.setNormalMap(await gfx3TextureManager.loadTexture('./examples/viewer/cube_brick/normal.png'));
+  await mesh.loadFromFile('./examples/viewer/cube_normal/mesh.jsm');
+  mesh.mat.setNormalMap(await gfx3TextureManager.loadTexture('./examples/viewer/cube_normal/normal.png'));
   mesh.mat.setParam(Gfx3MatParam.LIGHT_ENABLED, 1.0);
-  mesh.mat.setParam(Gfx3MatParam.ARCADE_ENABLED, 1.0);
-  mesh.mat.setParam(Gfx3MatParam.ARCADE_START_COLOR_R, 0.5);
-  mesh.mat.setParam(Gfx3MatParam.ARCADE_START_COLOR_G, 0.5);
-  mesh.mat.setParam(Gfx3MatParam.ARCADE_START_COLOR_B, 0.1);
-  mesh.mat.setParam(Gfx3MatParam.ARCADE_END_COLOR_R, 0.5);
-  mesh.mat.setParam(Gfx3MatParam.ARCADE_END_COLOR_G, 0.5);
-  mesh.mat.setParam(Gfx3MatParam.ARCADE_END_COLOR_B, 0.1);
-  mesh.mat.setParam(Gfx3MatParam.ARCADE_SHARP_COLOR_R, 1.0);
-  mesh.mat.setParam(Gfx3MatParam.ARCADE_SHARP_COLOR_G, 1.0);
-  mesh.mat.setParam(Gfx3MatParam.ARCADE_SHARP_COLOR_B, 1.0);
   return mesh;
 }
 

@@ -44,7 +44,8 @@ def register():
   bpy.utils.register_class(WARME_OT_run_server)
   bpy.utils.register_class(WARME_OT_kill_server)
   bpy.utils.register_class(WARME_OT_run_game)
-  
+  bpy.utils.register_class(WARME_OT_build_game)
+
 
 def unregister():
   bpy.utils.unregister_class(WARME_OT_create_jsm)
@@ -79,6 +80,7 @@ def unregister():
   bpy.utils.unregister_class(WARME_OT_run_server)
   bpy.utils.unregister_class(WARME_OT_kill_server)
   bpy.utils.unregister_class(WARME_OT_run_game)
+  bpy.utils.unregister_class(WARME_OT_build_game)
 
 
 # ----------------------------------------------------------------------------------
@@ -853,6 +855,9 @@ class WARME_OT_run_server(bpy.types.Operator):
         cwd=bpy.path.abspath(context.scene.export_engine_path), 
         shell=True
       )
+      webbrowser.open("http://localhost:5173")
+      context.scene.auggie_status = "Serveurs démarrés"
+      self.report({'INFO'}, "Serveurs démarrés sur localhost:5173.")
     except Exception as e:
       print(f"Erreur lors du lancement de npm : {e}")
     #except
@@ -876,19 +881,50 @@ class WARME_OT_kill_server(bpy.types.Operator):
     except Exception as e:
       self.report({'ERROR'}, f"Erreur lors du nettoyage : {str(e)}")
     #except
+    return {'FINISHED'}
 
+
+class WARME_OT_build_game(bpy.types.Operator):
+  bl_idname = "object.build_game"
+  bl_label = "Build Game"
+
+  def execute(self, context):
+    try:      
+      process = subprocess.Popen(
+        ["npm", "run", "build:tauri", "--", "--no-bundle"],
+        cwd=bpy.path.abspath(context.scene.export_engine_path), 
+        shell=True
+      )
+
+      context.scene.auggie_status = "En cours de construction..."
+      process.wait()
+      context.scene.auggie_status = "Binaire Terminé !" if process.returncode == 0 else "Erreur"
+    except Exception as e:
+      context.scene.auggie_status = "Erreur lors de la construction !"
+      print(f"Erreur lors du lancement de npm : {e}")
+    #except
     return {'FINISHED'}
 
 
 class WARME_OT_run_game(bpy.types.Operator):
   bl_idname = "object.run_game"
-  bl_label = "Run the Game"
+  bl_label = "Run Game"
 
   def execute(self, context):
+    base_path = bpy.path.abspath(context.scene.export_engine_path)    
+    exe_name = "tauri-app.exe" 
+    exe_path = os.path.join(base_path, "src-tauri", "target", "release", exe_name)
+
+    if not os.path.exists(exe_path):
+      self.report({'ERROR'}, f"Binaire non trouvé : {exe_path}")
+      return {'CANCELLED'}
+    #endif
+
     try:
-      webbrowser.open("http://localhost:5173/game.html" )
-      self.report({'INFO'}, f"Lancement effectué")
+      subprocess.Popen([exe_path], cwd=os.path.dirname(exe_path))
+      self.report({'INFO'}, "Jeu lancé !")
     except Exception as e:
-      self.report({'ERROR'}, f"Impossible d'ouvrir le navigateur : {e}")
+      self.report({'ERROR'}, f"Erreur au lancement : {e}")
+      return {'CANCELLED'}
     #except
     return {'FINISHED'}
