@@ -1,6 +1,7 @@
-# ![Legacy Logo](https://raw.githubusercontent.com/jay19240/Legacy/refs/heads/master/engine/public/textures/logo.png)
+<img src="https://raw.githubusercontent.com/jay19240/Legacy/refs/heads/master/engine/public/textures/logo.png" align="right" width="300">
+</br>
 
-## 🕹️ Welcome girlz and boyz
+## 🕹️ Welcome Girlz and Boyz
 **Legacy** is all about building fast, powerful, and creative game experiences, mixing modernity and classic techniques to bridge two worlds: **simplicity** and **flexibility** and two era.
 If you are excited about **retro-game development**, **old-school Y2K era optimizations**, and **wtf-games**, you're in the right place.
 
@@ -24,3 +25,21 @@ This allows you to focus on what truly matters:
 *   🎨 Artistic Design
 *   📐 Level Design
 *   🎮 Game Design (assisted by AI)
+
+## 🤖 Getting Started
+**Legacy** is coming with a default game boilerplate that you can used to start quickly inside it.    
+The default game screen is located in `engine/src/game/main.js`.   
+The default scene of the game is located in `engine/public/scene.blend`   
+Open this file with Blender and install the addon. 
+```bash
+- Install legacygpu-plugin-blender.zip in File -> Preferences -> Addons
+- Set the Engine Path to "engine" folder
+- Set the Assets Path to "engine/public" folder
+```
+Now, follow the instructions to install engine dependencies:
+```bash
+cd engine
+npm install
+```
+
+**Congratulation**, your setup is done !
