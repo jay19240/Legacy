@@ -18,9 +18,7 @@ Inspired by the classic techniques that made retro games legendary, **Legacy Eng
 ## 🤖 The AI Way
 > You can use Legacy as a regular game engine, but here is our vision: **We are a laboratory for the future of game dev.**
 
-We believe in **AI agents** managing 100% of your game codebase, that's why you can prompt directly in the Blender plugin.  
-A large number of examples and pre-prompt guidelines are the cornerstone of this feature.   
-This allows you to focus on what truly matters:
+We believe in **AI agents** managing 100% of your game codebase, that's why you can prompt directly in the Blender plugin. A large number of examples and pre-prompt guidelines are the cornerstone of this feature. This allows you to focus on what truly matters:
 *   📜 Storytelling
 *   🎨 Artistic Design
 *   📐 Level Design
