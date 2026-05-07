@@ -24,7 +24,8 @@ This allows you to focus on what truly matters:
 *   📜 Storytelling
 *   🎨 Artistic Design
 *   📐 Level Design
-*   🎮 Game Design (assisted by AI)
+*   🎮 Animation
+*   Etc...
 
 ## 🤖 Getting Started
 **Legacy** is coming with a default game boilerplate that you can used to start quickly inside it.    
