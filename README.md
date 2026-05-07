@@ -2,7 +2,7 @@
 </br>
 
 ## 🕹️ Welcome Girlz and Boyz
-**Legacy** is all about building fast, powerful, and creative game experiences, mixing modernity and classic techniques to bridge two worlds: **simplicity** and **flexibility** and two era.
+**Legacy** is all about building fast, powerful, and creative game experiences, mixing modernity and classic techniques to bridge two worlds: **simplicity** and **flexibility** and two era **2000** and **2026**.
 If you are excited about **retro-game development**, **old-school Y2K era optimizations**, and **wtf-games**, you're in the right place.
 
 ## 🛠️ The First Web-Based Game Engine Integrated with Blender
