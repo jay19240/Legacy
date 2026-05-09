@@ -233,4 +233,27 @@ export class UIWidget {
    * @param {string} actionId - The action identifier.
    */
   onAction(actionId: string): void {}
+
+  /**
+   * Query an element from the node ui element.
+   * 
+   * @param {string} selector - The selector.
+   */
+  query<T extends Element = HTMLElement>(selector: string): T {
+    const element = this.node.querySelector(selector) as T | null;
+    if (!element) {
+      throw new Error(`UIWidget::query(): element "${selector}" not found in root!`);
+    }
+
+    return element;
+  }
+
+  /**
+   * Query all elements from the node ui element.
+   * 
+   * @param {string} selector - The selector.
+   */
+  queryAll<T extends Element = HTMLElement>(selector: string): NodeListOf<T> {
+    return this.node.querySelectorAll<T>(selector);
+  }
 }
