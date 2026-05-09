@@ -13,7 +13,8 @@ Inspired by the classic techniques that made retro games legendary, **Legacy Eng
 *   **Arcade physics** for snappy gameplay.
 *   **Modern rendering** powered by WebGPU.
 *   **A proven graphics pipeline** to create unique experiences like the golden age of video games.
-**Legacy** is able with **Jolt** to render real world physics too for very complex gameplay.
+
+BUT: **Legacy** can also render real world physics with **Jolt** for very complex gameplay.
 
 ## 🤖 The AI Way
 > You can use Legacy as a regular game engine, but here is our vision: **We are a laboratory for the future of game dev.**
