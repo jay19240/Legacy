@@ -256,4 +256,8 @@ export class UIWidget {
   queryAll<T extends Element = HTMLElement>(selector: string): NodeListOf<T> {
     return this.node.querySelectorAll<T>(selector);
   }
+
+  get element() {
+    return this.node;
+  }
 }
