@@ -6,7 +6,7 @@
 If you are excited about **retro-game development**, **old-school Y2K era optimizations**, and **wtf-games**, you're in the right place.
 
 ## 🛠️ The First Web-Based Game Engine Integrated with Blender
-**Legacy** is the first web-based game engine offering **native integration with Blender**. One click, that's all it takes to automatically export your entire scene from the world's most popular 3D editor directly into your game.
+**Legacy** is the first web-based game engine offering **native integration with Blender**. One click, that's all it takes to automatically export your entire scene from the world's most popular 3D editor directly into your game, inclusing collider mesh, animated mesh, entity, light, etc...
 
 ## 🎨 The Style We Believe In
 Inspired by the classic techniques that made retro games legendary, **Legacy Engine** combines:
