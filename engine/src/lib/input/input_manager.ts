@@ -7,6 +7,7 @@ export interface InputPad {
   nButtons: number;
   nAxes: number;
   axes: Array<number>;
+  hat: Array<number>;
   pressed: Array<boolean>;
 }
 
@@ -17,16 +18,12 @@ export interface InputAction {
 }
 
 export type InputSource = 'keyboard' | 'gamepad0' | 'gamepad1' | 'gamepad2' | 'gamepad3';
-
-// standard mapping https://w3c.github.io/gamepad/#remapping
-const GAME_PAD_KEY_MAPPING = new Map<string, string>();
-GAME_PAD_KEY_MAPPING.set('0', '0');
-GAME_PAD_KEY_MAPPING.set('1', '1');
-GAME_PAD_KEY_MAPPING.set('BtnSelect', '8');
-GAME_PAD_KEY_MAPPING.set('PadTop', '12');
-GAME_PAD_KEY_MAPPING.set('PadBottom', '13');
-GAME_PAD_KEY_MAPPING.set('PadLeft', '14');
-GAME_PAD_KEY_MAPPING.set('PadRight', '15');
+export enum InputPadAxis {
+  UP = 0,
+  DOWN = 1,
+  LEFT = 2,
+  RIGHT = 3
+};
 
 /**
  * Singleton input manager.
@@ -105,35 +102,35 @@ export class InputManager {
 
     this.registerAction('gamepad0', '0', 'OK');
     this.registerAction('gamepad0', '1', 'BACK');
-    this.registerAction('gamepad0', 'BtnSelect', 'SELECT');
-    this.registerAction('gamepad0', 'PadLeft', 'LEFT');
-    this.registerAction('gamepad0', 'PadRight', 'RIGHT');
-    this.registerAction('gamepad0', 'PadTop', 'UP');
-    this.registerAction('gamepad0', 'PadBottom', 'DOWN');
+    this.registerAction('gamepad0', '9', 'SELECT');
+    this.registerAction('gamepad0', 'left', 'LEFT');
+    this.registerAction('gamepad0', 'right', 'RIGHT');
+    this.registerAction('gamepad0', 'up', 'UP');
+    this.registerAction('gamepad0', 'down', 'DOWN');
 
     this.registerAction('gamepad1', '0', 'OK');
     this.registerAction('gamepad1', '1', 'BACK');
-    this.registerAction('gamepad1', 'BtnSelect', 'SELECT');
-    this.registerAction('gamepad1', 'PadLeft', 'LEFT');
-    this.registerAction('gamepad1', 'PadRight', 'RIGHT');
-    this.registerAction('gamepad1', 'PadTop', 'UP');
-    this.registerAction('gamepad1', 'PadBottom', 'DOWN');
+    this.registerAction('gamepad1', '9', 'SELECT');
+    this.registerAction('gamepad1', 'left', 'LEFT');
+    this.registerAction('gamepad1', 'right', 'RIGHT');
+    this.registerAction('gamepad1', 'up', 'UP');
+    this.registerAction('gamepad1', 'down', 'DOWN');
 
     this.registerAction('gamepad2', '0', 'OK');
     this.registerAction('gamepad2', '1', 'BACK');
-    this.registerAction('gamepad2', 'BtnSelect', 'SELECT');
-    this.registerAction('gamepad2', 'PadLeft', 'LEFT');
-    this.registerAction('gamepad2', 'PadRight', 'RIGHT');
-    this.registerAction('gamepad2', 'PadTop', 'UP');
-    this.registerAction('gamepad2', 'PadBottom', 'DOWN');
+    this.registerAction('gamepad2', '9', 'SELECT');
+    this.registerAction('gamepad2', 'left', 'LEFT');
+    this.registerAction('gamepad2', 'right', 'RIGHT');
+    this.registerAction('gamepad2', 'up', 'UP');
+    this.registerAction('gamepad2', 'down', 'DOWN');
 
     this.registerAction('gamepad3', '0', 'OK');
     this.registerAction('gamepad3', '1', 'BACK');
-    this.registerAction('gamepad3', 'BtnSelect', 'SELECT');
-    this.registerAction('gamepad3', 'PadLeft', 'LEFT');
-    this.registerAction('gamepad3', 'PadRight', 'RIGHT');
-    this.registerAction('gamepad3', 'PadTop', 'UP');
-    this.registerAction('gamepad3', 'PadBottom', 'DOWN');
+    this.registerAction('gamepad3', '9', 'SELECT');
+    this.registerAction('gamepad3', 'left', 'LEFT');
+    this.registerAction('gamepad3', 'right', 'RIGHT');
+    this.registerAction('gamepad3', 'up', 'UP');
+    this.registerAction('gamepad3', 'down', 'DOWN');
   }
 
   /**
@@ -146,7 +143,8 @@ export class InputManager {
       const state = this.actionOnceMap.get(actionId);
       if (state == 1) {
         this.actionOnceMap.delete(actionId);
-      } else {
+      }
+      else {
         this.actionOnceMap.set(actionId, 1);
       }
     }
@@ -163,7 +161,7 @@ export class InputManager {
     this.actionRegister.set(inputSource + eventKey, {
       id: actionId,
       inputSource: inputSource,
-      eventKey: inputSource.startsWith('gamepad') ? GAME_PAD_KEY_MAPPING.get(eventKey)! : eventKey
+      eventKey: eventKey
     });
   }
 
@@ -272,7 +270,7 @@ export class InputManager {
   /**
    * Returns the current drag movement.
    */
-  getDragDelta(): vec2 {
+  getMouseDragDelta(): vec2 {
     if (!this.mouseDown) {
       return [0, 0];
     }
@@ -295,14 +293,30 @@ export class InputManager {
 
   /**
    * Returns a pad axis value or zero if not found.
-   * 
+   *
    * @param {number} index - The index of the pad.
    * @param {number} axis - The index of the pad.
    */
   getPadAxis(index: number, axis: number): number {
     const pad = this.pads.find(p => p.index == index);
     if (!pad) return 0;
-    return pad.axes[axis];
+    return pad.axes[axis] ?? 0;
+  }
+
+  /**
+   * Returns the analog stick position as a vec2, with an optional deadzone.
+   *
+   * @param {number} index - The index of the pad.
+   * @param {0 | 1} stick - The stick to read (0 = left, 1 = right).
+   * @param {number} deadzone - Radial deadzone below which [0, 0] is returned.
+   */
+  getPadStick(index: number, stick: 0 | 1, deadzone: number = 0.15): vec2 {
+    const pad = this.pads.find(p => p.index == index);
+    if (!pad) return [0, 0];
+    const x = pad.axes[stick * 2] ?? 0;
+    const y = pad.axes[stick * 2 + 1] ?? 0;
+    if (Math.hypot(x, y) < deadzone) return [0, 0];
+    return [x, y];
   }
 
   /**
@@ -322,7 +336,7 @@ export class InputManager {
 
   #addPad(pad: InputPad): void {
     this.pads.push(pad);
-    if (this.padsInterval === null) {
+    if (!this.padsInterval) {
       this.padsInterval = setInterval(() => this.#updatePadsStatus(), 50);
     }
   }
@@ -331,13 +345,13 @@ export class InputManager {
     const action = this.actionRegister.get('keyboard' + e.code);
 
     if (!this.keyMap.get(e.code) && action) {
-      eventManager.emit(this, 'E_ACTION_ONCE', { actionId: action.id });
+      eventManager.emit(this, 'E_ACTION_ONCE', { e: e, actionId: action.id });
       this.actionMap.set(action.id, true);
       this.actionOnceMap.set(action.id, 0);
     }
 
     if (action) {
-      eventManager.emit(this, 'E_ACTION', { actionId: action.id });
+      eventManager.emit(this, 'E_ACTION', { e: e, actionId: action.id });
       this.actionMap.set(action.id, true);
     }
 
@@ -348,7 +362,7 @@ export class InputManager {
   #handleKeyUp(e: KeyboardEvent): void {
     const action = this.actionRegister.get('keyboard' + e.code);
     if (action) {
-      eventManager.emit(this, 'E_ACTION_RELEASED', { actionId: action.id });
+      eventManager.emit(this, 'E_ACTION_RELEASED', { e: e, actionId: action.id });
       this.actionMap.set(action.id, false);
     }
 
@@ -369,13 +383,13 @@ export class InputManager {
       this.mouseDown = true;
       this.dragStartPosition[0] = pos[0];
       this.dragStartPosition[1] = pos[1];
-      eventManager.emit(this, 'E_MOUSE_DOWN_ONCE', { buttons: e.buttons, x: pos[0], y: pos[1] });
+      eventManager.emit(this, 'E_MOUSE_DOWN_ONCE', { e: e, buttons: e.buttons, x: pos[0], y: pos[1] });
     }
 
     this.mouseDown = true;
     this.dragStartPosition[0] = pos[0];
     this.dragStartPosition[1] = pos[1];
-    eventManager.emit(this, 'E_MOUSE_DOWN', { buttons: e.buttons, x: pos[0], y: pos[1] });
+    eventManager.emit(this, 'E_MOUSE_DOWN', { e: e, buttons: e.buttons, x: pos[0], y: pos[1] });
   }
 
   #handlePointerUp(e: PointerEvent): void {
@@ -386,7 +400,7 @@ export class InputManager {
     this.mouseDown = false;
     this.dragStartPosition[0] = 0;
     this.dragStartPosition[1] = 0;
-    eventManager.emit(this, 'E_MOUSE_UP', { x: x, y: y });
+    eventManager.emit(this, 'E_MOUSE_UP', { e: e, x: x, y: y });
   }
 
   #handlePointerMove(e: PointerEvent): void {
@@ -402,17 +416,17 @@ export class InputManager {
     this.mouseDown = e.pointerType == 'mouse' ? (e.buttons & 1) !== 0 : true;
     this.mousePosition = [pos[0], pos[1]];
 
-    eventManager.emit(this, 'E_MOUSE_MOVE', { movementX: e.movementX, movementY: e.movementY });
+    eventManager.emit(this, 'E_MOUSE_MOVE', { e: e, movementX: e.movementX, movementY: e.movementY });
 
     if (this.mouseDown) {
-      eventManager.emit(this, 'E_MOUSE_DRAG', { movementX: e.movementX, movementY: e.movementY });
+      eventManager.emit(this, 'E_MOUSE_DRAG', { e: e, movementX: e.movementX, movementY: e.movementY });
     }
   }
 
   #handleWheel(e: WheelEvent): void {
     this.mouseDown = (e.buttons & 1) !== 0;
     this.mouseWheel += Math.sign(e.deltaY);
-    eventManager.emit(this, 'E_MOUSE_WHEEL', { delta: Math.sign(e.deltaY) });
+    eventManager.emit(this, 'E_MOUSE_WHEEL', { e: e, delta: Math.sign(e.deltaY) });
   }
 
   #handlePointerLockChanged(e: Event): void {
@@ -422,17 +436,17 @@ export class InputManager {
 
     if (document.pointerLockElement == document.body) {
       this.pointerLockCaptured = true;
-      eventManager.emit(this, 'E_POINTER_LOCK_CHANGED', { lockCaptured: true });
+      eventManager.emit(this, 'E_POINTER_LOCK_CHANGED', { e: e, lockCaptured: true });
     }
     else {
       this.pointerLockCaptured = false;
-      eventManager.emit(this, 'E_POINTER_LOCK_CHANGED', { lockCaptured: false });
+      eventManager.emit(this, 'E_POINTER_LOCK_CHANGED', { e: e, lockCaptured: false });
     }
   }
 
   #handleGamePadDisconnected(e: GamepadEvent): void {
     this.removePad(e.gamepad.id);
-    eventManager.emit(this, 'E_GAMEPAD_DISCONNECTED', { id: e.gamepad.id });
+    eventManager.emit(this, 'E_GAMEPAD_DISCONNECTED', { e: e, id: e.gamepad.id });
   }
 
   #handleGamePadConnected(e: GamepadEvent): void {
@@ -441,7 +455,8 @@ export class InputManager {
       id: e.gamepad.id,
       nButtons: e.gamepad.buttons.length,
       nAxes: e.gamepad.axes.length,
-      axes: e.gamepad.axes as Array<number>,
+      axes: [],
+      hat: [0, 0, 0, 0],
       pressed: []
     };
 
@@ -450,7 +465,7 @@ export class InputManager {
     }
 
     this.#addPad(pad);
-    eventManager.emit(this, 'E_GAMEPAD_CONNECTED', { id: e.gamepad.id });
+    eventManager.emit(this, 'E_GAMEPAD_CONNECTED', { e: e, id: e.gamepad.id });
   }
 
   #updatePadsStatus(): void {
@@ -463,19 +478,80 @@ export class InputManager {
       }
 
       const pad = this.getPad(gamepad.index);
+
       if (pad != null) {
+        // Analogs Sticks
+        for (let i = 0; i < gamepad.axes.length; i++) {
+          pad.axes[i] = gamepad.axes[i];
+        }
+
+        // D-Pad
+        const hatAxis = gamepad.axes[9];
+        let up, down, left, right = 0.0;
+        if (hatAxis !== undefined && hatAxis <= 1.0 && hatAxis >= -1.0) {
+          up = (hatAxis > -1.05 && hatAxis < -0.6 || hatAxis > 0.9) ? 1.0 : 0.0;
+          down = (hatAxis > -0.2 && hatAxis < 0.2) ? 1.0 : 0.0;
+          left = (hatAxis > 0.3 && hatAxis < 1.05) ? 1.0 : 0.0;
+          right = (hatAxis > -0.8 && hatAxis < -0.3) ? 1.0 : 0.0;
+
+          if (up) {
+            const action = this.actionRegister.get('gamepad' + gamepad.index + 'up');
+            if (!action) {
+              return;
+            }
+
+            if (up != pad.hat[InputPadAxis.UP]) eventManager.emit(this, 'E_ACTION_ONCE', { actionId: action.id });
+            eventManager.emit(this, 'E_ACTION', { actionId: action.id });
+          }
+          else if (down) {
+            const action = this.actionRegister.get('gamepad' + gamepad.index + 'down');
+            if (!action) {
+              return;
+            }
+
+            if (down != pad.hat[InputPadAxis.DOWN]) eventManager.emit(this, 'E_ACTION_ONCE', { actionId: action.id });
+            eventManager.emit(this, 'E_ACTION', { actionId: action.id });
+          }
+          else if (left) {
+            const action = this.actionRegister.get('gamepad' + gamepad.index + 'left');
+            if (!action) {
+              return;
+            }
+
+            if (left != pad.hat[InputPadAxis.LEFT]) eventManager.emit(this, 'E_ACTION_ONCE', { actionId: action.id });
+            eventManager.emit(this, 'E_ACTION', { actionId: action.id });
+          }
+          else if (right) {
+            const action = this.actionRegister.get('gamepad' + gamepad.index + 'right');
+            if (!action) {
+              return;
+            }
+
+            if (right != pad.hat[InputPadAxis.RIGHT]) eventManager.emit(this, 'E_ACTION_ONCE', { actionId: action.id });
+            eventManager.emit(this, 'E_ACTION', { actionId: action.id });
+          }
+        }
+
+        pad.hat[InputPadAxis.UP] = up as number;
+        pad.hat[InputPadAxis.DOWN] = down as number;
+        pad.hat[InputPadAxis.LEFT] = left as number;
+        pad.hat[InputPadAxis.RIGHT] = right as number;
+
+        // Buttons
         for (let n = 0; n < gamepad.buttons.length; n++) {
-          if (gamepad.buttons[n].pressed == pad.pressed[n]) {
-            continue;
+          const action = this.actionRegister.get('gamepad' + gamepad.index + n);
+
+          if (gamepad.buttons[n].pressed && !this.keyMap.get('gamepad' + gamepad.index + '-' + n) && action) {
+            eventManager.emit(this, 'E_ACTION_ONCE', { actionId: action.id });
+            this.actionOnceMap.set(action.id, 0);
           }
 
-          const action = this.actionRegister.get('gamepad' + gamepad.index + n.toString());
+          if (gamepad.buttons[n].pressed && action) {
+            eventManager.emit(this, 'E_ACTION', { actionId: action.id });
+          }
 
           if (action) {
             this.actionMap.set(action.id, gamepad.buttons[n].pressed);
-            if (gamepad.buttons[n].pressed) {
-              eventManager.emit(this, 'E_ACTION', { actionId: action.id });
-            }
           }
 
           this.keyMap.set('gamepad' + gamepad.index + '-' + n, gamepad.buttons[n].pressed);

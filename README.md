@@ -47,7 +47,7 @@ npm install
 ## 🤖 In the futur
 - Write documentation
 - Add Tiled support TMX file and Tiled Extension for full binding with Legacy2D
-- Add Gamepad analog stick support
 - Add mobile touch event input support
+- Add 2D lines collisions system
 
 **Congratulation**, your setup is done !

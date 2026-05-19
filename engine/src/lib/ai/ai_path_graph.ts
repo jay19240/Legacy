@@ -205,11 +205,17 @@ export abstract class AIPathGraph<T> {
   }
 
   findNodeById(id: string): AIPathNode<T> | undefined {
-    return this.nodes.values().find(n => n.id == id);
+    return this.nodes.get(id);
   }
 
   findNodeByType(type: string): AIPathNode<T> | undefined {
-    return this.nodes.values().find(n => n.type == type);
+    for (const node of this.nodes.values()) {
+      if (node.type == type) {
+        return node;
+      }
+    }
+
+    return;
   }
 
   /**

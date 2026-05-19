@@ -44,7 +44,7 @@ export class Gfx2Manager {
     this.cameraPosition = [0, 0];
     this.bgColor = [0, 0, 0, 1];
     this.offCanvas = new OffscreenCanvas(this.canvas.clientWidth, this.canvas.clientHeight);
-    this.offCtx = this.offCanvas.getContext('2d', { willReadFrequently: true })!;
+    this.offCtx = this.offCanvas.getContext('2d', { willReadFrequently: true }) as OffscreenCanvasRenderingContext2D;
 
     if (!this.ctx) {
       UT.FAIL('This browser does not support canvas');

@@ -199,7 +199,7 @@ export interface Gfx3MatAnimation {
 export class Gfx3Material {
   shadowCasting: boolean;
   flipbooks: Array<Gfx3MatFlipbook>;
-  animations: Set<Gfx3MatAnimation>;
+  animations: Map<Gfx3MatFlipbookTarget, Gfx3MatAnimation>;
   dataChanged: boolean;
   texturesChanged: boolean;
   jamFramesChanged: boolean;
@@ -227,7 +227,7 @@ export class Gfx3Material {
   constructor(options: Gfx3MatOptions) {
     this.shadowCasting = options.shadowCasting ?? false;
     this.flipbooks = options.flipbooks ?? [];
-    this.animations = new Set<Gfx3MatAnimation>();
+    this.animations = new Map();
     this.dataChanged = true;
     this.texturesChanged = false;
     this.jamFramesChanged = false;
@@ -676,7 +676,7 @@ export class Gfx3Material {
             animation.frameProgress = 0;
           }
           else {
-            this.animations.delete(animation);
+            this.animations.delete(animation.flipbook.textureTarget);
           }
 
           eventManager.emit(this, 'E_FINISHED');
@@ -722,7 +722,7 @@ export class Gfx3Material {
       throw new Error('Gfx3Material::playAnimation: flipbook not exist for this texture target.');
     }
 
-    if (preventSameAnimation && this.animations.values().find(a => a.flipbook == flipbook)) {
+    if (preventSameAnimation && this.animations.has(flipbook.textureTarget)) {
       return;
     }
 
@@ -742,7 +742,7 @@ export class Gfx3Material {
       offsetParams = [Gfx3MatParam.DISSOLVE_MAP_OFFSET_X, Gfx3MatParam.DISSOLVE_MAP_OFFSET_Y];
     }
 
-    this.animations.add({
+    this.animations.set(flipbook.textureTarget, {
       flipbook: flipbook,
       currentFrameIndex: 0,
       looped: looped,
@@ -760,7 +760,7 @@ export class Gfx3Material {
    * @param {TextureTarget} textureTarget - The name of the animated texture.
    */
   stopAnimation(textureTarget: Gfx3MatFlipbookTarget): void {
-    const animation = this.animations.values().find(a => a.flipbook.textureTarget == textureTarget);
+    const animation = this.animations.get(textureTarget);
     if (!animation) {
       throw new Error('Gfx3Material::stopAnimation: animation not found on this texture target.');
     }
@@ -769,7 +769,7 @@ export class Gfx3Material {
     this.params[animation.offsetParams[1]] = 0.0;
     this.params[animation.offsetBlendingParam] = 0.0;
 
-    this.animations.delete(animation);
+    this.animations.delete(textureTarget);
     this.dataChanged = true;
   }
 

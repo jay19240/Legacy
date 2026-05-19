@@ -425,6 +425,48 @@ class Gfx3Manager {
   }
 
   /**
+   * Creates an empty GPU texture allocated specifically to receive HTMLVideoElement frames,
+   * configured with a repeating sampler for seamless tiling.
+   * 
+   * @param {number} width - The video width.
+   * @param {number} height - The video height.
+   * @param {GPUSamplerDescriptor} [samplerDescriptor] - Custom sampler configuration.
+   */
+  createVideoTexture(width: number, height: number, samplerDescriptor: GPUSamplerDescriptor = {}): Gfx3Texture {
+    const gpuTexture = this.device.createTexture({
+      size: [width, height],
+      format: 'rgba8unorm',
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
+    });
+
+    const gpuSampler = this.device.createSampler(Object.assign(samplerDescriptor, {
+      magFilter: samplerDescriptor.magFilter ?? 'linear',
+      minFilter: samplerDescriptor.minFilter ?? 'linear',
+      addressModeU: samplerDescriptor.addressModeU ?? 'repeat',
+      addressModeV: samplerDescriptor.addressModeV ?? 'repeat'
+    }));
+
+    return { gpuTexture, gpuSampler };
+  }
+
+  /**
+   * Updates an existing Gfx3Texture with the current frame of an HTMLVideoElement.
+   * Call this inside your update/render loop before drawing objects that use this texture.
+   * 
+   * @param {Gfx3Texture} texture - The texture object returned by createVideoTexture().
+   * @param {HTMLVideoElement} video - The HTML5 video element playing the seamless noise loop.
+   */
+  updateVideoTexture(texture: Gfx3Texture, video: HTMLVideoElement): void {
+    if (video.readyState >= video.HAVE_CURRENT_DATA) {
+      this.device.queue.copyExternalImageToTexture(
+        { source: video as any },
+        { texture: texture.gpuTexture },
+        [video.videoWidth, video.videoHeight]
+      );
+    }
+  }
+
+  /**
    * Creates a cubemap texture from a list of bitmaps or canvas elements.
    * 
    * @param [bitmaps] - The list of six bitmaps.

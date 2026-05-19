@@ -13,6 +13,8 @@ import { gfx2Manager } from '@lib/legacy';
 import { Screen } from '@lib/legacy';
 import { Gfx3MeshJSM } from '@lib/legacy';
 import { EnginePack3D } from '@lib/legacy';
+
+import { eventManager, inputManager } from '@lib/legacy';
 // ---------------------------------------------------------------------------------------
 
 class GameScreen extends Screen {
@@ -29,6 +31,14 @@ class GameScreen extends Screen {
     gfx2Manager.setBgColor(0, 0, 0, 0);
     this.pack = await EnginePack3D.createFromFile('orbit', './scene.blend.pak');
     this.player = this.pack.jsm.getObject('Player');
+
+    inputManager.registerAction('gamepad0', 'left', 'L_LEFT');
+
+    eventManager.subscribe(inputManager, 'E_ACTION', this, this.handleAction);
+  }
+
+  handleAction(data: any) {
+    console.log(data);
   }
 
   update(ts: number) {
