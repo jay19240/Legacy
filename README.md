@@ -41,5 +41,13 @@ Now, follow the instructions to install engine dependencies:
 cd engine
 npm install
 ```
+## 🤖 Research on
+- How integrate script editor ?
+
+## 🤖 In the futur
+- Write documentation
+- Add Tiled support TMX file and Tiled Extension for full binding with Legacy2D
+- Add Gamepad analog stick support
+- Add mobile touch event input support
 
 **Congratulation**, your setup is done !
