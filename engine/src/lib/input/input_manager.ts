@@ -66,6 +66,7 @@ export class InputManager {
   dragStartPosition: vec2;
   pointerLockEnabled: boolean;
   pointerLockCaptured: boolean;
+  gamepadEnabled: boolean;
 
   constructor() {
     this.container = <HTMLDivElement>document.getElementById('APP');
@@ -81,6 +82,7 @@ export class InputManager {
     this.dragStartPosition = [0, 0];
     this.pointerLockEnabled = false;
     this.pointerLockCaptured = false;
+    this.gamepadEnabled = false;
 
     document.addEventListener('keydown', (e) => this.#handleKeyDown(e));
     document.addEventListener('keyup', (e) => this.#handleKeyUp(e));
@@ -139,6 +141,10 @@ export class InputManager {
    * @param {number} ts - The timestep.
    */
   update(ts: number): void {
+    if (this.gamepadEnabled) {
+      this.#updatePadsStatus();
+    }
+
     for (const actionId of this.actionOnceMap.keys()) {
       const state = this.actionOnceMap.get(actionId);
       if (state == 1) {
@@ -148,6 +154,23 @@ export class InputManager {
         this.actionOnceMap.set(actionId, 1);
       }
     }
+  }
+
+  /**
+   * Clear actions cache.
+   */
+  clearActionsCache() {
+    this.actionMap.clear();
+    this.actionOnceMap.clear();
+  }
+
+  /**
+   * Enable or not the gamepad support.
+   * 
+   * @param {boolean} enabled - The enabled flag.
+   */
+  enableGamepad(enabled: boolean) {
+    this.gamepadEnabled = enabled;
   }
 
   /**
@@ -336,9 +359,6 @@ export class InputManager {
 
   #addPad(pad: InputPad): void {
     this.pads.push(pad);
-    if (!this.padsInterval) {
-      this.padsInterval = setInterval(() => this.#updatePadsStatus(), 50);
-    }
   }
 
   #handleKeyDown(e: KeyboardEvent): boolean {
