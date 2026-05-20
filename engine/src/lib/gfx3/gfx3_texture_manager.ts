@@ -139,9 +139,16 @@ export class Gfx3TextureManager {
    * 
    * @param {string} path - The file path.
    */
-  getTextureURL(path: string): string {
+  getTextureURL(path: string, refresh: boolean = false): string {
     if (!this.urls.has(path)) {
       throw new Error('Gfx3TextureManager::getTextureURL(): The texture file doesn\'t exist, cannot get !');
+    }
+
+    if (refresh) {
+      const url = this.urls.get(path)!;
+      const blob = this.blobs.get(path)!;
+      URL.revokeObjectURL(url);
+      this.urls.set(path, URL.createObjectURL(blob));
     }
 
     return this.urls.get(path)!;

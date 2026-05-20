@@ -103,6 +103,13 @@ export class SpritesheetManager {
       throw new Error('SpritesheetManager::deleteSpritesheet(): The spritesheet file doesn\'t exist, cannot delete !');
     }
 
+    const spritesheet = this.spritesheets.get(path)!;
+    spritesheet.Animations.forEach(a => {
+      URL.revokeObjectURL(a.Name);
+      this.textureUrls.delete(a.Name);
+    });
+
+    this.textures.delete(path);
     this.spritesheets.delete(path);
   }
 
@@ -158,6 +165,10 @@ export class SpritesheetManager {
    * Deletes all stored files.
    */
   releaseFiles(): void {
+    for (const url of this.textureUrls.values()) {
+      URL.revokeObjectURL(url);
+    }
+    
     for (const path of this.spritesheets.keys()) {
       this.spritesheets.delete(path);
     }

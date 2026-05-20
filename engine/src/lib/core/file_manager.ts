@@ -81,9 +81,16 @@ export class FileManager {
    * 
    * @param {string} path - The file path.
    */
-  getFileURL(path: string): string {
+  getFileURL(path: string, refresh: boolean = false): string {
     if (!this.urls.has(path)) {
       throw new Error('FileManager::getFileURL(): The file doesn\'t exist, cannot get !');
+    }
+
+    if (refresh) {
+      const url = this.urls.get(path)!;
+      const blob = this.blobs.get(path)!;
+      URL.revokeObjectURL(url);
+      this.urls.set(path, URL.createObjectURL(blob));
     }
 
     return this.urls.get(path)!;
