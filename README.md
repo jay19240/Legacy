@@ -46,6 +46,9 @@ npm install
 
 ## 🤖 In the futur
 - Write documentation
+- Add vertex attributes to handle texture tiling transition
+- Add mesh instanciate from Blender
+- Add JNM dynamic mesh load with translate and rotation
 - Add Tiled support TMX file and Tiled Extension for full binding with Legacy2D
 - Add mobile touch event input support
 - Add 2D lines collisions system
